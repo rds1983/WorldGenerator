@@ -58,11 +58,13 @@ namespace WorldGenerator
 			HeatData = new MapData(settings.Width, settings.Height);
 			MoistureData = new MapData(settings.Width, settings.Height);
 
+			var totalSize = settings.Width * settings.Height;
 			// loop through each x,y point - get height value
 			for (var x = 0; x < settings.Width; x++)
 			{
 				for (var y = 0; y < settings.Height; y++)
 				{
+					LogInfo("Processing point {0}/{1}", x * settings.Height + y, totalSize);
 
 					// WRAP ON BOTH AXIS
 					// Noise range

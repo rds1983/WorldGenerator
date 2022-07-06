@@ -87,14 +87,16 @@ namespace WorldGenerator
 			float curLon = westLonBound;
 			float curLat = southLatBound;
 
+			var totalSize = settings.Width * settings.Height;
+
 			// Loop through each tile using its lat/long coordinates
 			for (var x = 0; x < settings.Width; x++)
 			{
-
 				curLon = westLonBound;
 
 				for (var y = 0; y < settings.Height; y++)
 				{
+					LogInfo("Processing point {0}/{1}", x * settings.Height + y, totalSize);
 
 					float x1 = 0, y1 = 0, z1 = 0;
 

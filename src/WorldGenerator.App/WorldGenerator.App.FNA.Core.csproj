@@ -7,7 +7,7 @@
     <EmbeddedResource Include="Resources\*.*" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Myra.Extended\src\Myra.Extended.FNA.Core.csproj" />
+    <ProjectReference Include="..\..\..\Myra\src\Myra\Myra.FNA.Core.csproj" />
     <ProjectReference Include="..\WorldGenerator\WorldGenerator.csproj" />
   </ItemGroup>  
 </Project>

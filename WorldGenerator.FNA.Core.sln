@@ -15,8 +15,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Myra.FNA.Core", "..\Myra\sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FontStashSharp.FNA.Core", "..\FontStashSharp\src\XNA\FontStashSharp.FNA.Core.csproj", "{260DA4DE-B044-47BA-BE29-6C5198A186E0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Myra.Extended.FNA.Core", "..\Myra.Extended\src\Myra.Extended.FNA.Core.csproj", "{054FD551-170E-4BD1-A8A7-2F7EDC2B1906}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,14 +71,6 @@ Global
 		{260DA4DE-B044-47BA-BE29-6C5198A186E0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{260DA4DE-B044-47BA-BE29-6C5198A186E0}.Release|x64.ActiveCfg = Release|Any CPU
 		{260DA4DE-B044-47BA-BE29-6C5198A186E0}.Release|x64.Build.0 = Release|Any CPU
-		{054FD551-170E-4BD1-A8A7-2F7EDC2B1906}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{054FD551-170E-4BD1-A8A7-2F7EDC2B1906}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{054FD551-170E-4BD1-A8A7-2F7EDC2B1906}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{054FD551-170E-4BD1-A8A7-2F7EDC2B1906}.Debug|x64.Build.0 = Debug|Any CPU
-		{054FD551-170E-4BD1-A8A7-2F7EDC2B1906}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{054FD551-170E-4BD1-A8A7-2F7EDC2B1906}.Release|Any CPU.Build.0 = Release|Any CPU
-		{054FD551-170E-4BD1-A8A7-2F7EDC2B1906}.Release|x64.ActiveCfg = Release|Any CPU
-		{054FD551-170E-4BD1-A8A7-2F7EDC2B1906}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

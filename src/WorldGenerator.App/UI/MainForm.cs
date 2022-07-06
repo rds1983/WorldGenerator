@@ -1,11 +1,9 @@
 using Microsoft.Xna.Framework.Graphics;
-using Myra.Extended.Widgets;
 using Myra.Graphics2D;
 using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI.Properties;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using WorldGenerator.App.ThreeD;
 
@@ -15,9 +13,8 @@ namespace WorldGenerator.App.UI
 	{
 		private PropertyGrid _propertyGrid;
 		private GeneratorSettings _config;
-		private LogView _logView;
 		private readonly List<Action> _uiThreadActions = new List<Action>();
-		private AutoResetEvent _uiEvent = new AutoResetEvent(false);
+		private string _logMessage;
 		private Generator _generator;
 		private View3D _view3d;
 
@@ -40,10 +37,6 @@ namespace WorldGenerator.App.UI
 			_splitPane.SetSplitterPosition(0, 0.35f);
 			_panelProperties.Widgets.Add(_propertyGrid);
 
-			_logView = new LogView();
-			_panelLog.Widgets.Add(_logView);
-			_panelLog.Visible = false;
-
 			_buttonGenerate.Click += _buttonGenerate_Click;
 
 			_buttonHeightMap.PressedChanged += (s, a) => UpdateView();
@@ -54,10 +47,10 @@ namespace WorldGenerator.App.UI
 
 		public void LogMessage(string message)
 		{
-			ExecuteAtUIThread(() =>
+			lock (_uiThreadActions)
 			{
-				_logView.Log(message);
-			});
+				_logMessage = message;
+			}
 		}
 
 		private void _buttonGenerate_Click(object sender, EventArgs e)
@@ -72,8 +65,7 @@ namespace WorldGenerator.App.UI
 				ExecuteAtUIThread(() =>
 				{
 					_buttonGenerate.Enabled = false;
-					_logView.ClearLog();
-					_panelLog.Visible = true;
+					_labelLog.Text = "Starting...";
 
 					// HACK: Recalculate layout so _logView size gets updated
 					Desktop.UpdateLayout();
@@ -103,7 +95,7 @@ namespace WorldGenerator.App.UI
 				ExecuteAtUIThread(() =>
 				{
 					_buttonGenerate.Enabled = true;
-					_panelLog.Visible = false;
+					_logMessage = string.Empty;
 				});
 			}
 		}
@@ -156,8 +148,6 @@ namespace WorldGenerator.App.UI
 			{
 				_uiThreadActions.Add(action);
 			}
-
-			_uiEvent.WaitOne();
 		}
 
 		public override void InternalRender(RenderContext context)
@@ -172,7 +162,8 @@ namespace WorldGenerator.App.UI
 				}
 
 				_uiThreadActions.Clear();
-				_uiEvent.Set();
+
+				_labelLog.Text = _logMessage;
 			}
 		}
 	}

@@ -39,8 +39,8 @@
             <Image HorizontalAlignment="Center" VerticalAlignment="Center" Id="_image2DView" />
           </Panel>
         </VerticalStackPanel>
-        <Panel Id="_panelLog" />
-      </Panel>
+        <Label Text="GetData" VerticalAlignment="Bottom" Id="_labelLog" />
+     </Panel>
     </HorizontalSplitPane>
   </VerticalStackPanel>
 </Project>
