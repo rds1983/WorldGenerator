@@ -1,27 +1,30 @@
+using Microsoft.Xna.Framework.Graphics;
 using Myra.Extended.Widgets;
 using Myra.Graphics2D;
-using Myra.Graphics2D.UI;
+using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI.Properties;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using WorldGenerator;
 
-namespace FantasyMapGenerator.App.UI
+namespace WorldGenerator.App.UI
 {
 	public partial class MainForm
 	{
 		private PropertyGrid _propertyGrid;
 		private GeneratorSettings _config;
-		private Image _mapView;
 		private LogView _logView;
 		private readonly List<Action> _uiThreadActions = new List<Action>();
 		private AutoResetEvent _uiEvent = new AutoResetEvent(false);
+		private Generator _generator;
 
 		public MainForm()
 		{
 			BuildUI();
+
+			_buttonWrapped.IsPressed = true;
+			_buttonBiomeMap.IsPressed = true;
 
 			_config = new GeneratorSettings();
 			_propertyGrid = new PropertyGrid
@@ -29,17 +32,20 @@ namespace FantasyMapGenerator.App.UI
 				Object = _config
 			};
 
-			_splitPane.SetSplitterPosition(0, 0.25f);
+			_splitPane.SetSplitterPosition(0, 0.35f);
 			_panelProperties.Widgets.Add(_propertyGrid);
 
-			_mapView = new Image();
-			_panelMap.Widgets.Add(_mapView);
-
 			_logView = new LogView();
+			_logView.Id = "LogView";
 			_panelLog.Widgets.Add(_logView);
 			_panelLog.Visible = false;
 
 			_buttonGenerate.Click += _buttonGenerate_Click;
+
+			_buttonHeightMap.PressedChanged += (s, a) => UpdateView();
+			_buttonHeatMap.PressedChanged += (s, a) => UpdateView();
+			_buttonMoistureMap.PressedChanged += (s, a) => UpdateView();
+			_buttonBiomeMap.PressedChanged += (s, a) => UpdateView();
 		}
 
 		public void LogMessage(string message)
@@ -66,12 +72,21 @@ namespace FantasyMapGenerator.App.UI
 					_panelLog.Visible = true;
 				});
 
-/*				var landGenerator = new LandGenerator(_config);
-				var result = landGenerator.Generate();
-				var locationsGenerator = new LocationsGenerator(_config);
-				locationsGenerator.Generate(result);
+				Generator generator;
 
-				_mapView.Map = result;*/
+				if (_buttonWrapped.IsPressed)
+				{
+					generator = new WrappingWorldGenerator(_config, LogMessage);
+				}
+				else
+				{
+					generator = new SphericalWorldGenerator(_config, LogMessage);
+				}
+
+				generator.Go();
+
+				_generator = generator;
+				UpdateView();
 			}
 			finally
 			{
@@ -83,9 +98,38 @@ namespace FantasyMapGenerator.App.UI
 			}
 		}
 
+		private void UpdateView()
+		{
+			if (_generator == null)
+			{
+				return;
+			}
+
+			Texture2D texture;
+			var tiles = _generator.Tiles;
+			if (_buttonHeightMap.IsPressed)
+			{
+				texture = TextureGenerator.GetHeightMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles);
+			}
+			else if (_buttonHeatMap.IsPressed)
+			{
+				texture = TextureGenerator.GetHeatMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles);
+			}
+			else if (_buttonMoistureMap.IsPressed)
+			{
+				texture = TextureGenerator.GetMoistureMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles);
+			}
+			else
+			{
+				texture = TextureGenerator.GetBiomeMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles, _config.ColdestValue, _config.ColderValue, _config.ColdValue);
+			}
+
+			_image2DView.Renderable = new TextureRegion(texture);
+		}
+
 		private void ExecuteAtUIThread(Action action)
 		{
-			lock(_uiThreadActions)
+			lock (_uiThreadActions)
 			{
 				_uiThreadActions.Add(action);
 			}
@@ -99,7 +143,7 @@ namespace FantasyMapGenerator.App.UI
 
 			lock (_uiThreadActions)
 			{
-				foreach(var action in _uiThreadActions)
+				foreach (var action in _uiThreadActions)
 				{
 					action();
 				}

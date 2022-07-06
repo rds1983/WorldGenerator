@@ -8,6 +8,7 @@ namespace WorldGenerator
 	{
 		protected int Seed;
 		protected readonly GeneratorSettings settings;
+		private Action<string> infoHandler;
 
 		protected MapData HeightData;
 		protected MapData HeatData;
@@ -15,7 +16,7 @@ namespace WorldGenerator
 		protected MapData Clouds1;
 		protected MapData Clouds2;
 
-		protected Tile[,] Tiles;
+		public Tile[,] Tiles;
 
 		private List<TileGroup> Waters = new List<TileGroup>();
 		private List<TileGroup> Lands = new List<TileGroup>();
@@ -34,12 +35,24 @@ namespace WorldGenerator
 			{ BiomeType.Ice, BiomeType.Tundra, BiomeType.BorealForest, BiomeType.TemperateRainforest, BiomeType.TropicalRainforest,  BiomeType.TropicalRainforest }   //WETTEST
 		};
 
-		public Generator(GeneratorSettings settings)
+		public Generator(GeneratorSettings settings, Action<string> infoHandler)
 		{
 			this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
+			this.infoHandler = infoHandler;
 		}
 
-		void Start()
+		public void LogInfo(string message, params object[] args)
+		{
+			if (infoHandler == null)
+			{
+				return;
+			}
+
+			infoHandler(Utils.FormatMessage(message, args));
+		}
+
+
+		public void Go()
 		{
 			Instantiate();
 			Generate();
@@ -62,19 +75,37 @@ namespace WorldGenerator
 
 		protected virtual void Generate()
 		{
+			LogInfo("GetData");
 			GetData();
+
+			LogInfo("LoadTiles");
 			LoadTiles();
+
+			LogInfo("UpdateNeighbors");
 			UpdateNeighbors();
 
+			LogInfo("GenerateRivers");
 			GenerateRivers();
+
+			LogInfo("BuildRiverGroups");
 			BuildRiverGroups();
+
+			LogInfo("DigRiverGroups");
 			DigRiverGroups();
+
+			LogInfo("AdjustMoistureMap");
 			AdjustMoistureMap();
 
+			LogInfo("UpdateBitmasks");
 			UpdateBitmasks();
+
+			LogInfo("FloodFill");
 			FloodFill();
 
+			LogInfo("GenerateBiomeMap");
 			GenerateBiomeMap();
+
+			LogInfo("UpdateBiomeBitmask");
 			UpdateBiomeBitmask();
 		}
 

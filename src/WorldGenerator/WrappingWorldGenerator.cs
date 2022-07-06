@@ -10,7 +10,7 @@ namespace WorldGenerator
 		protected ImplicitCombiner HeatMap;
 		protected ImplicitFractal MoistureMap;
 
-		public WrappingWorldGenerator(GeneratorSettings settings) : base(settings)
+		public WrappingWorldGenerator(GeneratorSettings settings, Action<string> infoHandler = null) : base(settings, infoHandler)
 		{
 		}
 

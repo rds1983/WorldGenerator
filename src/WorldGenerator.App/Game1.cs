@@ -1,10 +1,10 @@
-﻿using FantasyMapGenerator.App.UI;
+﻿using WorldGenerator.App.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Myra;
 using Myra.Graphics2D.UI;
 
-namespace FantasyMapGenerator.App
+namespace WorldGenerator.App
 {
 	/// <summary>
 	/// This is the main type for your game.

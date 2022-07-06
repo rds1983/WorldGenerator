@@ -12,7 +12,7 @@ namespace WorldGenerator
 		protected ImplicitFractal Cloud2Map;
 
 
-		public SphericalWorldGenerator(GeneratorSettings settings) : base(settings)
+		public SphericalWorldGenerator(GeneratorSettings settings, Action<string> infoHandler = null) : base(settings, infoHandler)
 		{
 		}
 
@@ -150,7 +150,7 @@ namespace WorldGenerator
 		}
 
 		// Convert Lat/Long coordinates to x/y/z for spherical mapping
-		void LatLonToXYZ(float lat, float lon, ref float x, ref float y, ref float z)
+		private void LatLonToXYZ(float lat, float lon, ref float x, ref float y, ref float z)
 		{
 			float r = MathF.Cos(MathHelper.Deg2Rad * lon);
 			x = r * MathF.Cos(MathHelper.Deg2Rad * lat);

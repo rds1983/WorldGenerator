@@ -1,5 +1,5 @@
 <Project>
-  <Project.ExportOptions Namespace="FantasyMapGenerator.App.UI" Class="MainForm" OutputPath="C:\Projects\FantasyMapGenerator\src\FantasyMapGenerator.App\UI" />
+  <Project.ExportOptions Namespace="WorldGenerator.App.UI" Class="MainForm" OutputPath="D:\Projects\WorldGenerator\src\WorldGenerator.App\UI" />
   <VerticalStackPanel>
     <VerticalStackPanel.Proportions>
       <Proportion Type="Auto" />
@@ -11,9 +11,32 @@
     </HorizontalStackPanel>
     <HorizontalSeparator />
     <HorizontalSplitPane Id="_splitPane">
-      <Panel ClipToBounds="True" Id="_panelProperties" />
+      <ScrollViewer>
+        <VerticalStackPanel>
+          <HorizontalStackPanel Spacing="8">
+            <Label Text="Type:" />
+            <RadioButton Text="Wrapped" Id="_buttonWrapped" />
+            <RadioButton Text="Spherical" Id="_buttonSpherical" />
+          </HorizontalStackPanel>
+          <Panel Id="_panelProperties" />
+        </VerticalStackPanel>
+      </ScrollViewer>
       <Panel>
-        <Panel ClipToBounds="True" Id="_panelMap" />
+        <VerticalStackPanel>
+          <VerticalStackPanel.Proportions>
+            <Proportion Type="Auto" />
+            <Proportion Type="Auto" />
+            <Proportion Type="Fill" />
+          </VerticalStackPanel.Proportions>
+          <HorizontalStackPanel Spacing="8">
+            <RadioButton Text="Height Map" Id="_buttonHeightMap" />
+            <RadioButton Text="Heat Map" Id="_buttonHeatMap" />
+            <RadioButton Text="Moisture Map" Id="_buttonMoistureMap" />
+            <RadioButton Text="Biome Map" Id="_buttonBiomeMap" />
+          </HorizontalStackPanel>
+          <HorizontalSeparator />
+          <Image HorizontalAlignment="Center" VerticalAlignment="Center" Id="_image2DView" />
+        </VerticalStackPanel>
         <Panel Id="_panelLog" />
       </Panel>
     </HorizontalSplitPane>
