@@ -1,0 +1,21 @@
+<Project>
+  <Project.ExportOptions Namespace="FantasyMapGenerator.App.UI" Class="MainForm" OutputPath="C:\Projects\FantasyMapGenerator\src\FantasyMapGenerator.App\UI" />
+  <VerticalStackPanel>
+    <VerticalStackPanel.Proportions>
+      <Proportion Type="Auto" />
+      <Proportion Type="Auto" />
+      <Proportion Type="Fill" />
+    </VerticalStackPanel.Proportions>
+    <HorizontalStackPanel>
+      <TextButton Text="Generate" Width="100" Id="_buttonGenerate" />
+    </HorizontalStackPanel>
+    <HorizontalSeparator />
+    <HorizontalSplitPane Id="_splitPane">
+      <Panel ClipToBounds="True" Id="_panelProperties" />
+      <Panel>
+        <Panel ClipToBounds="True" Id="_panelMap" />
+        <Panel Id="_panelLog" />
+      </Panel>
+    </HorizontalSplitPane>
+  </VerticalStackPanel>
+</Project>
