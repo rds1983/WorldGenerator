@@ -19,3 +19,8 @@ FNA Port of https://github.com/jongallant/WorldGeneratorFinal
 
 # Screenshot
 ![](images/screenshot.png)
+
+# Credits
+* [WorldGeneratorFinal](https://github.com/jongallant/WorldGeneratorFinal)
+* [AccidentalNoiseLibrary](https://github.com/TinkerWorX/AccidentalNoiseLibrary)
+* [FNA](https://github.com/FNA-XNA/FNA)
