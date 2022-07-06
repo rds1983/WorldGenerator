@@ -1,14 +1,27 @@
 ﻿using System;
+using System.Threading;
 using TinkerWorX.AccidentalNoiseLibrary;
 
 namespace WorldGenerator
 {
 	public class WrappingWorldGenerator : Generator
 	{
+		private readonly struct TaskParams
+		{
+			public readonly int x;
+			public readonly int y;
+
+			public TaskParams(int x, int y)
+			{
+				this.x = x;
+				this.y = y;
+			}
+		}
 
 		protected ImplicitFractal HeightMap;
 		protected ImplicitCombiner HeatMap;
 		protected ImplicitFractal MoistureMap;
+		private int tasks;
 
 		public WrappingWorldGenerator(GeneratorSettings settings, Action<string> infoHandler = null) : base(settings, infoHandler)
 		{
@@ -64,43 +77,83 @@ namespace WorldGenerator
 			{
 				for (var y = 0; y < settings.Height; y++)
 				{
-					LogInfo("Processing point {0}/{1}", x * settings.Height + y, totalSize);
+					var p = new TaskParams(x, y);
 
-					// WRAP ON BOTH AXIS
-					// Noise range
-					float x1 = 0, x2 = 2;
-					float y1 = 0, y2 = 2;
-					float dx = x2 - x1;
-					float dy = y2 - y1;
-
-					// Sample noise at smaller intervals
-					float s = x / (float)settings.Width;
-					float t = y / (float)settings.Height;
-
-					// Calculate our 4D coordinates
-					float nx = x1 + MathF.Cos(s * 2 * MathF.PI) * dx / (2 * MathF.PI);
-					float ny = y1 + MathF.Cos(t * 2 * MathF.PI) * dy / (2 * MathF.PI);
-					float nz = x1 + MathF.Sin(s * 2 * MathF.PI) * dx / (2 * MathF.PI);
-					float nw = y1 + MathF.Sin(t * 2 * MathF.PI) * dy / (2 * MathF.PI);
-
-					float heightValue = (float)HeightMap.Get(nx, ny, nz, nw);
-					float heatValue = (float)HeatMap.Get(nx, ny, nz, nw);
-					float moistureValue = (float)MoistureMap.Get(nx, ny, nz, nw);
-
-					// keep track of the max and min values found
-					if (heightValue > HeightData.Max) HeightData.Max = heightValue;
-					if (heightValue < HeightData.Min) HeightData.Min = heightValue;
-
-					if (heatValue > HeatData.Max) HeatData.Max = heatValue;
-					if (heatValue < HeatData.Min) HeatData.Min = heatValue;
-
-					if (moistureValue > MoistureData.Max) MoistureData.Max = moistureValue;
-					if (moistureValue < MoistureData.Min) MoistureData.Min = moistureValue;
-
-					HeightData.Data[x, y] = heightValue;
-					HeatData.Data[x, y] = heatValue;
-					MoistureData.Data[x, y] = moistureValue;
+					if (settings.MultiThreadedGeneration)
+					{
+						ThreadPool.QueueUserWorkItem(ProcessPoint, p);
+						Interlocked.Increment(ref tasks);
+					}
+					else
+					{
+						ProcessPoint(p);
+					}
 				}
+			}
+
+			if (settings.MultiThreadedGeneration)
+			{
+				while (true)
+				{
+					Thread.Sleep(1000);
+					if (tasks <= 0)
+					{
+						break;
+					}
+				}
+			}
+		}
+
+		private void ProcessPoint(object state)
+		{
+			var p = (TaskParams)state;
+			var x = p.x;
+			var y = p.y;
+
+			// WRAP ON BOTH AXIS
+			// Noise range
+			float x1 = 0, x2 = 2;
+			float y1 = 0, y2 = 2;
+			float dx = x2 - x1;
+			float dy = y2 - y1;
+
+			// Sample noise at smaller intervals
+			float s = x / (float)settings.Width;
+			float t = y / (float)settings.Height;
+
+			// Calculate our 4D coordinates
+			float nx = x1 + MathF.Cos(s * 2 * MathF.PI) * dx / (2 * MathF.PI);
+			float ny = y1 + MathF.Cos(t * 2 * MathF.PI) * dy / (2 * MathF.PI);
+			float nz = x1 + MathF.Sin(s * 2 * MathF.PI) * dx / (2 * MathF.PI);
+			float nw = y1 + MathF.Sin(t * 2 * MathF.PI) * dy / (2 * MathF.PI);
+
+			float heightValue = (float)HeightMap.Get(nx, ny, nz, nw);
+			float heatValue = (float)HeatMap.Get(nx, ny, nz, nw);
+			float moistureValue = (float)MoistureMap.Get(nx, ny, nz, nw);
+
+			// keep track of the max and min values found
+			if (heightValue > HeightData.Max) HeightData.Max = heightValue;
+			if (heightValue < HeightData.Min) HeightData.Min = heightValue;
+
+			if (heatValue > HeatData.Max) HeatData.Max = heatValue;
+			if (heatValue < HeatData.Min) HeatData.Min = heatValue;
+
+			if (moistureValue > MoistureData.Max) MoistureData.Max = moistureValue;
+			if (moistureValue < MoistureData.Min) MoistureData.Min = moistureValue;
+
+			HeightData.Data[x, y] = heightValue;
+			HeatData.Data[x, y] = heatValue;
+			MoistureData.Data[x, y] = moistureValue;
+
+			if (settings.MultiThreadedGeneration)
+			{
+				Interlocked.Decrement(ref tasks);
+				LogInfo("Points left: {0}", tasks);
+			}
+			else
+			{
+				var pointsLeft = settings.Width * settings.Height - (x * settings.Height + y);
+				LogInfo("Points left: {0}", pointsLeft);
 			}
 		}
 

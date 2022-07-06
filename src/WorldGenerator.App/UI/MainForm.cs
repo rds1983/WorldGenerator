@@ -17,6 +17,67 @@ namespace WorldGenerator.App.UI
 		private string _logMessage;
 		private Generator _generator;
 		private View3D _view3d;
+		private Texture2D _textureHeight, _textureHeat, _textureMoisture, _textureBiome;
+
+		private Texture2D TextureHeight
+		{
+			get
+			{
+				if (_textureHeight == null)
+				{
+					var tiles = _generator.Tiles;
+
+					_textureHeight = TextureGenerator.GetHeightMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles);
+				}
+
+				return _textureHeight;
+			}
+		}
+
+		private Texture2D TextureHeat
+		{
+			get
+			{
+				if (_textureHeat == null)
+				{
+					var tiles = _generator.Tiles;
+
+					_textureHeat = TextureGenerator.GetHeatMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles);
+				}
+
+				return _textureHeat;
+			}
+		}
+
+		private Texture2D TextureMoisture
+		{
+			get
+			{
+				if (_textureMoisture == null)
+				{
+					var tiles = _generator.Tiles;
+
+					_textureMoisture = TextureGenerator.GetMoistureMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles);
+				}
+
+				return _textureMoisture;
+			}
+		}
+
+		private Texture2D TextureBiome
+		{
+			get
+			{
+				if (_textureBiome == null)
+				{
+					var tiles = _generator.Tiles;
+
+					_textureBiome = TextureGenerator.GetBiomeMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles, _config.ColdestValue, _config.ColderValue, _config.ColdValue);
+				}
+
+				return _textureBiome;
+			}
+		}
 
 		public MainForm()
 		{
@@ -85,6 +146,8 @@ namespace WorldGenerator.App.UI
 				generator.Go();
 
 				_generator = generator;
+				_textureHeight = _textureHeat = _textureMoisture = _textureBiome = null;
+
 				ExecuteAtUIThread(() =>
 				{
 					UpdateView();
@@ -111,19 +174,19 @@ namespace WorldGenerator.App.UI
 			var tiles = _generator.Tiles;
 			if (_buttonHeightMap.IsPressed)
 			{
-				texture = TextureGenerator.GetHeightMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles);
+				texture = TextureHeight;
 			}
 			else if (_buttonHeatMap.IsPressed)
 			{
-				texture = TextureGenerator.GetHeatMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles);
+				texture = TextureHeat;
 			}
 			else if (_buttonMoistureMap.IsPressed)
 			{
-				texture = TextureGenerator.GetMoistureMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles);
+				texture = TextureMoisture;
 			}
 			else
 			{
-				texture = TextureGenerator.GetBiomeMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles, _config.ColdestValue, _config.ColderValue, _config.ColdValue);
+				texture = TextureBiome;
 			}
 
 			if (_generator is WrappingWorldGenerator)

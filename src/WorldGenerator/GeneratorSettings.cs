@@ -8,6 +8,8 @@ namespace WorldGenerator
 		public int Width = 512;
 		[Category("Generator Values")]
 		public int Height = 512;
+		[Category("Generator Values")]
+		public bool MultiThreadedGeneration = false;
 
 		[Category("Height Map")]
 		public int TerrainOctaves = 6;
