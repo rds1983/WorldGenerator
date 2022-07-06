@@ -184,28 +184,28 @@ namespace WorldGenerator
 					switch (tiles[x, y].HeightType)
 					{
 						case HeightType.DeepWater:
-							pixels[x + y * width] = DeepColor;
+							pixels[x + y * width] = new Color(0, 0, 0, 1);
 							break;
 						case HeightType.ShallowWater:
-							pixels[x + y * width] = ShallowColor;
+							pixels[x + y * width] = new Color(0, 0, 0, 1);
 							break;
 						case HeightType.Sand:
-							pixels[x + y * width] = SandColor;
+							pixels[x + y * width] = new Color(0.3f, 0.3f, 0.3f, 1);
 							break;
 						case HeightType.Grass:
-							pixels[x + y * width] = GrassColor;
+							pixels[x + y * width] = new Color(0.45f, 0.45f, 0.45f, 1);
 							break;
 						case HeightType.Forest:
-							pixels[x + y * width] = ForestColor;
+							pixels[x + y * width] = new Color(0.6f, 0.6f, 0.6f, 1);
 							break;
 						case HeightType.Rock:
-							pixels[x + y * width] = RockColor;
+							pixels[x + y * width] = new Color(0.75f, 0.75f, 0.75f, 1);
 							break;
 						case HeightType.Snow:
-							pixels[x + y * width] = SnowColor;
+							pixels[x + y * width] = new Color(1, 1, 1, 1);
 							break;
 						case HeightType.River:
-							pixels[x + y * width] = RiverColor;
+							pixels[x + y * width] = new Color(0, 0, 0, 1);
 							break;
 					}
 				}

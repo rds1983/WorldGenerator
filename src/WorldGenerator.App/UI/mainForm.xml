@@ -35,7 +35,9 @@
             <RadioButton Text="Biome Map" Id="_buttonBiomeMap" />
           </HorizontalStackPanel>
           <HorizontalSeparator />
-          <Image HorizontalAlignment="Center" VerticalAlignment="Center" Id="_image2DView" />
+          <Panel Id="_panelView">
+            <Image HorizontalAlignment="Center" VerticalAlignment="Center" Id="_image2DView" />
+          </Panel>
         </VerticalStackPanel>
         <Panel Id="_panelLog" />
       </Panel>
