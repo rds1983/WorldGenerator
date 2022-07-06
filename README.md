@@ -17,8 +17,9 @@ FNA Port of https://github.com/jongallant/WorldGeneratorFinal
 2. Open WorldGenerator.FNA.Core.sln in the IDE.
 3. After succesful build, copy [FNA Native Binaries](https://fna.flibitijibibo.com/archive/fnalibs.tar.bz2) to the output binary folder.
 
-# Screenshot
+# Screenshots
 ![](images/screenshot.png)
+![](images/screenshot2.png)
 
 # Credits
 * [WorldGeneratorFinal](https://github.com/jongallant/WorldGeneratorFinal)
