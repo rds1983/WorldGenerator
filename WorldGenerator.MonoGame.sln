@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinkerWorX.AccidentalNoiseLibrary", "src\AccidentalNoiseLibrary\TinkerWorX.AccidentalNoiseLibrary.csproj", "{6E1DF971-52D7-47E1-B3CB-94839D271DCB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorldGenerator", "src\WorldGenerator\WorldGenerator.csproj", "{DEC55A5C-EEEB-462E-A367-B5B9E24FBEC3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorldGenerator.App.MonoGame", "src\WorldGenerator.App\WorldGenerator.App.MonoGame.csproj", "{11FE08A7-1ED7-4D37-B4DA-75DF0D00FB1D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6E1DF971-52D7-47E1-B3CB-94839D271DCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E1DF971-52D7-47E1-B3CB-94839D271DCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E1DF971-52D7-47E1-B3CB-94839D271DCB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6E1DF971-52D7-47E1-B3CB-94839D271DCB}.Debug|x64.Build.0 = Debug|Any CPU
+		{6E1DF971-52D7-47E1-B3CB-94839D271DCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E1DF971-52D7-47E1-B3CB-94839D271DCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E1DF971-52D7-47E1-B3CB-94839D271DCB}.Release|x64.ActiveCfg = Release|Any CPU
+		{6E1DF971-52D7-47E1-B3CB-94839D271DCB}.Release|x64.Build.0 = Release|Any CPU
+		{DEC55A5C-EEEB-462E-A367-B5B9E24FBEC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEC55A5C-EEEB-462E-A367-B5B9E24FBEC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEC55A5C-EEEB-462E-A367-B5B9E24FBEC3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DEC55A5C-EEEB-462E-A367-B5B9E24FBEC3}.Debug|x64.Build.0 = Debug|Any CPU
+		{DEC55A5C-EEEB-462E-A367-B5B9E24FBEC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEC55A5C-EEEB-462E-A367-B5B9E24FBEC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEC55A5C-EEEB-462E-A367-B5B9E24FBEC3}.Release|x64.ActiveCfg = Release|Any CPU
+		{DEC55A5C-EEEB-462E-A367-B5B9E24FBEC3}.Release|x64.Build.0 = Release|Any CPU
+		{11FE08A7-1ED7-4D37-B4DA-75DF0D00FB1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11FE08A7-1ED7-4D37-B4DA-75DF0D00FB1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11FE08A7-1ED7-4D37-B4DA-75DF0D00FB1D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{11FE08A7-1ED7-4D37-B4DA-75DF0D00FB1D}.Debug|x64.Build.0 = Debug|Any CPU
+		{11FE08A7-1ED7-4D37-B4DA-75DF0D00FB1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11FE08A7-1ED7-4D37-B4DA-75DF0D00FB1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11FE08A7-1ED7-4D37-B4DA-75DF0D00FB1D}.Release|x64.ActiveCfg = Release|Any CPU
+		{11FE08A7-1ED7-4D37-B4DA-75DF0D00FB1D}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A9C9D369-EE58-4E9D-B9FE-63023B644741}
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Myra.UIEditor\Myra.UIEditor.csproj
+	EndGlobalSection
+EndGlobal

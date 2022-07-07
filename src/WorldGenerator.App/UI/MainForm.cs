@@ -92,10 +92,6 @@ namespace WorldGenerator.App.UI
 				_result = generator.GenerationResult;
 				_viewType = generator is WrappingWorldGenerator ? ViewType.View2D : ViewType.View3D;
 
-				LogMessage("Collecting garbage");
-				generator = null;
-				GC.Collect();
-
 				LogMessage("Building textures");
 
 				var tiles = _result.Tiles;
