@@ -1,7 +1,10 @@
 # WorldGenerator
 FNA Port of https://github.com/jongallant/WorldGeneratorFinal
 
-# Building from Source Code
+# Building from Source Code for MonoGame
+Open WorldGenerator.MonoGame.sln in the IDE.
+
+# Building from Source Code for FNA
 1. Clone following libraries:
 
    a. [FNA](https://github.com/FNA-XNA/FNA)
@@ -9,9 +12,7 @@ FNA Port of https://github.com/jongallant/WorldGeneratorFinal
    b. [FontStashSharp](https://github.com/FontStashSharp/FontStashSharp)
    
    c. [Myra](https://github.com/rds1983/Myra)
-   
-   d. [Myra.Extended](https://github.com/rds1983/Myra.Extended)
-   
+     
    The overall project structure is expected to be following: ![](images/FolderStructure.png)
 
 2. Open WorldGenerator.FNA.Core.sln in the IDE.
@@ -32,3 +33,4 @@ bitcoin: 3GeKFcv8X1cn8WqH1mr8i7jgPBkQjQuyN1
 * [WorldGeneratorFinal](https://github.com/jongallant/WorldGeneratorFinal)
 * [AccidentalNoiseLibrary](https://github.com/TinkerWorX/AccidentalNoiseLibrary)
 * [FNA](https://github.com/FNA-XNA/FNA)
+* [MonoGame](https://www.monogame.net/)
