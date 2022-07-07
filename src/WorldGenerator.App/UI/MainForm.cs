@@ -11,13 +11,20 @@ namespace WorldGenerator.App.UI
 {
 	public partial class MainForm
 	{
+		private enum ViewType
+		{
+			View2D,
+			View3D
+		};
+
 		private PropertyGrid _propertyGrid;
 		private GeneratorSettings _config;
 		private readonly List<Action> _uiThreadActions = new List<Action>();
 		private string _logMessage;
-		private Generator _generator;
+		private GenerationResult _result;
 		private View3D _view3d;
 		private Texture2D _textureHeight, _textureHeat, _textureMoisture, _textureBiome;
+		private ViewType _viewType = ViewType.View2D;
 
 		public MainForm()
 		{
@@ -48,10 +55,7 @@ namespace WorldGenerator.App.UI
 
 		public void LogMessage(string message)
 		{
-			lock (_uiThreadActions)
-			{
-				_logMessage = message;
-			}
+			_logMessage = message;
 		}
 
 		private void _buttonGenerate_Click(object sender, EventArgs e)
@@ -85,11 +89,16 @@ namespace WorldGenerator.App.UI
 
 				generator.Go();
 
-				_generator = generator;
+				_result = generator.GenerationResult;
+				_viewType = generator is WrappingWorldGenerator ? ViewType.View2D : ViewType.View3D;
 
-				LogMessage("Building textures...");
+				LogMessage("Collecting garbage");
+				generator = null;
+				GC.Collect();
 
-				var tiles = _generator.Tiles;
+				LogMessage("Building textures");
+
+				var tiles = _result.Tiles;
 
 				_textureHeight = TextureGenerator.GetHeightMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles);
 				_textureHeat = TextureGenerator.GetHeatMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles);
@@ -113,7 +122,7 @@ namespace WorldGenerator.App.UI
 
 		private void UpdateView()
 		{
-			if (_generator == null)
+			if (_result == null)
 			{
 				return;
 			}
@@ -136,7 +145,7 @@ namespace WorldGenerator.App.UI
 				texture = _textureBiome;
 			}
 
-			if (_generator is WrappingWorldGenerator)
+			if (_viewType == ViewType.View2D)
 			{
 				// 2D
 				_image2DView.Renderable = new TextureRegion(texture);

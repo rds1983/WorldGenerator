@@ -28,13 +28,7 @@ namespace WorldGenerator
 		protected MapData Clouds1;
 		protected MapData Clouds2;
 
-		public Tile[,] Tiles;
-
-		private List<TileGroup> Waters = new List<TileGroup>();
-		private List<TileGroup> Lands = new List<TileGroup>();
-
-		private List<River> Rivers = new List<River>();
-		private List<RiverGroup> RiverGroups = new List<RiverGroup>();
+		public GenerationResult GenerationResult;
 
 		private BiomeType[,] BiomeTable = new BiomeType[6, 6]
 		{
@@ -63,7 +57,6 @@ namespace WorldGenerator
 			infoHandler(Utils.FormatMessage(message, args));
 		}
 
-
 		public void Go()
 		{
 			Instantiate();
@@ -81,6 +74,7 @@ namespace WorldGenerator
 		protected virtual void Instantiate()
 		{
 			Seed = MathHelper.RandomRange(0, int.MaxValue);
+			GenerationResult = new GenerationResult();
 
 			Initialize();
 		}
@@ -99,10 +93,10 @@ namespace WorldGenerator
 			LogInfo("GenerateRivers");
 			GenerateRivers();
 
-			LogInfo("BuildRiverGroups");
+			LogInfo("BuildGenerationResult.RiverGroups");
 			BuildRiverGroups();
 
-			LogInfo("DigRiverGroups");
+			LogInfo("DigGenerationResult.RiverGroups");
 			DigRiverGroups();
 
 			LogInfo("AdjustMoistureMap");
@@ -127,7 +121,7 @@ namespace WorldGenerator
 			{
 				for (var y = 0; y < settings.Height; y++)
 				{
-					Tiles[x, y].UpdateBiomeBitmask();
+					GenerationResult.Tiles[x, y].UpdateBiomeBitmask();
 				}
 			}
 		}
@@ -144,9 +138,9 @@ namespace WorldGenerator
 				for (var y = 0; y < settings.Height; y++)
 				{
 
-					if (!Tiles[x, y].Collidable) continue;
+					if (!GenerationResult.Tiles[x, y].Collidable) continue;
 
-					Tile t = Tiles[x, y];
+					Tile t = GenerationResult.Tiles[x, y];
 					t.BiomeType = GetBiomeType(t);
 				}
 			}
@@ -164,15 +158,15 @@ namespace WorldGenerator
 				int x2 = MathHelper.Mod(t.X + curr, settings.Width);
 				int y = t.Y;
 
-				AddMoisture(Tiles[x1, y], 0.025f / (center - new Vector2(x1, y)).Length());
+				AddMoisture(GenerationResult.Tiles[x1, y], 0.025f / (center - new Vector2(x1, y)).Length());
 
 				for (int i = 0; i < curr; i++)
 				{
-					AddMoisture(Tiles[x1, MathHelper.Mod(y + i + 1, settings.Height)], 0.025f / (center - new Vector2(x1, MathHelper.Mod(y + i + 1, settings.Height))).Length());
-					AddMoisture(Tiles[x1, MathHelper.Mod(y - (i + 1), settings.Height)], 0.025f / (center - new Vector2(x1, MathHelper.Mod(y - (i + 1), settings.Height))).Length());
+					AddMoisture(GenerationResult.Tiles[x1, MathHelper.Mod(y + i + 1, settings.Height)], 0.025f / (center - new Vector2(x1, MathHelper.Mod(y + i + 1, settings.Height))).Length());
+					AddMoisture(GenerationResult.Tiles[x1, MathHelper.Mod(y - (i + 1), settings.Height)], 0.025f / (center - new Vector2(x1, MathHelper.Mod(y - (i + 1), settings.Height))).Length());
 
-					AddMoisture(Tiles[x2, MathHelper.Mod(y + i + 1, settings.Height)], 0.025f / (center - new Vector2(x2, MathHelper.Mod(y + i + 1, settings.Height))).Length());
-					AddMoisture(Tiles[x2, MathHelper.Mod(y - (i + 1), settings.Height)], 0.025f / (center - new Vector2(x2, MathHelper.Mod(y - (i + 1), settings.Height))).Length());
+					AddMoisture(GenerationResult.Tiles[x2, MathHelper.Mod(y + i + 1, settings.Height)], 0.025f / (center - new Vector2(x2, MathHelper.Mod(y + i + 1, settings.Height))).Length());
+					AddMoisture(GenerationResult.Tiles[x2, MathHelper.Mod(y - (i + 1), settings.Height)], 0.025f / (center - new Vector2(x2, MathHelper.Mod(y - (i + 1), settings.Height))).Length());
 				}
 				curr--;
 			}
@@ -201,7 +195,7 @@ namespace WorldGenerator
 				for (var y = 0; y < settings.Height; y++)
 				{
 
-					Tile t = Tiles[x, y];
+					Tile t = GenerationResult.Tiles[x, y];
 					if (t.HeightType == HeightType.River)
 					{
 						AddMoisture(t, (int)60);
@@ -212,10 +206,10 @@ namespace WorldGenerator
 
 		private void DigRiverGroups()
 		{
-			for (int i = 0; i < RiverGroups.Count; i++)
+			for (int i = 0; i < GenerationResult.RiverGroups.Count; i++)
 			{
 
-				RiverGroup group = RiverGroups[i];
+				RiverGroup group = GenerationResult.RiverGroups[i];
 				River longest = null;
 
 				//Find longest river in this group
@@ -252,7 +246,7 @@ namespace WorldGenerator
 			{
 				for (var y = 0; y < settings.Height; y++)
 				{
-					Tile t = Tiles[x, y];
+					Tile t = GenerationResult.Tiles[x, y];
 
 					if (t.Rivers.Count > 1)
 					{
@@ -263,14 +257,14 @@ namespace WorldGenerator
 						for (int n = 0; n < t.Rivers.Count; n++)
 						{
 							River tileriver = t.Rivers[n];
-							for (int i = 0; i < RiverGroups.Count; i++)
+							for (int i = 0; i < GenerationResult.RiverGroups.Count; i++)
 							{
-								for (int j = 0; j < RiverGroups[i].Rivers.Count; j++)
+								for (int j = 0; j < GenerationResult.RiverGroups[i].Rivers.Count; j++)
 								{
-									River river = RiverGroups[i].Rivers[j];
+									River river = GenerationResult.RiverGroups[i].Rivers[j];
 									if (river.ID == tileriver.ID)
 									{
-										group = RiverGroups[i];
+										group = GenerationResult.RiverGroups[i];
 									}
 									if (group != null) break;
 								}
@@ -295,7 +289,7 @@ namespace WorldGenerator
 							{
 								group.Rivers.Add(t.Rivers[n]);
 							}
-							RiverGroups.Add(group);
+							GenerationResult.RiverGroups.Add(group);
 						}
 					}
 				}
@@ -314,7 +308,6 @@ namespace WorldGenerator
 		{
 			int attempts = 0;
 			int rivercount = settings.RiverCount;
-			Rivers = new List<River>();
 
 			// Generate some rivers
 			while (rivercount > 0 && attempts < settings.MaxRiverAttempts)
@@ -323,7 +316,7 @@ namespace WorldGenerator
 				// Get a random tile
 				int x = MathHelper.RandomRange(0, settings.Width);
 				int y = MathHelper.RandomRange(0, settings.Height);
-				Tile tile = Tiles[x, y];
+				Tile tile = GenerationResult.Tiles[x, y];
 
 				// validate the tile
 				if (!tile.Collidable) continue;
@@ -353,7 +346,7 @@ namespace WorldGenerator
 					else if (river.Tiles.Count >= settings.MinRiverLength)
 					{
 						//Validation passed - Add river to list
-						Rivers.Add(river);
+						GenerationResult.Rivers.Add(river);
 						tile.Rivers.Add(river);
 						rivercount--;
 					}
@@ -702,7 +695,7 @@ namespace WorldGenerator
 		// Build a Tile array from our data
 		private void LoadTiles()
 		{
-			Tiles = new Tile[settings.Width, settings.Height];
+			GenerationResult.Tiles = new Tile[settings.Width, settings.Height];
 
 			for (var x = 0; x < settings.Width; x++)
 			{
@@ -830,7 +823,7 @@ namespace WorldGenerator
 						t.Cloud2Value = (t.Cloud2Value - Clouds2.Min) / (Clouds2.Max - Clouds2.Min);
 					}
 
-					Tiles[x, y] = t;
+					GenerationResult.Tiles[x, y] = t;
 				}
 			}
 		}
@@ -841,7 +834,7 @@ namespace WorldGenerator
 			{
 				for (var y = 0; y < settings.Height; y++)
 				{
-					Tile t = Tiles[x, y];
+					Tile t = GenerationResult.Tiles[x, y];
 
 					t.Top = GetTop(t);
 					t.Bottom = GetBottom(t);
@@ -857,7 +850,7 @@ namespace WorldGenerator
 			{
 				for (var y = 0; y < settings.Height; y++)
 				{
-					Tiles[x, y].UpdateBitmask();
+					GenerationResult.Tiles[x, y].UpdateBitmask();
 				}
 			}
 		}
@@ -872,7 +865,7 @@ namespace WorldGenerator
 				for (int y = 0; y < settings.Height; y++)
 				{
 
-					Tile t = Tiles[x, y];
+					Tile t = GenerationResult.Tiles[x, y];
 
 					//Tile already flood filled, skip
 					if (t.FloodFilled) continue;
@@ -890,7 +883,7 @@ namespace WorldGenerator
 						}
 
 						if (group.Tiles.Count > 0)
-							Lands.Add(group);
+							GenerationResult.Lands.Add(group);
 					}
 					// Water
 					else
@@ -905,7 +898,7 @@ namespace WorldGenerator
 						}
 
 						if (group.Tiles.Count > 0)
-							Waters.Add(group);
+							GenerationResult.Waters.Add(group);
 					}
 				}
 			}

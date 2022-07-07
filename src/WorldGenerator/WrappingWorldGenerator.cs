@@ -150,19 +150,19 @@ namespace WorldGenerator
 
 		protected override Tile GetTop(Tile t)
 		{
-			return Tiles[t.X, MathHelper.Mod(t.Y - 1, settings.Height)];
+			return GenerationResult.Tiles[t.X, MathHelper.Mod(t.Y - 1, settings.Height)];
 		}
 		protected override Tile GetBottom(Tile t)
 		{
-			return Tiles[t.X, MathHelper.Mod(t.Y + 1, settings.Height)];
+			return GenerationResult.Tiles[t.X, MathHelper.Mod(t.Y + 1, settings.Height)];
 		}
 		protected override Tile GetLeft(Tile t)
 		{
-			return Tiles[MathHelper.Mod(t.X - 1, settings.Width), t.Y];
+			return GenerationResult.Tiles[MathHelper.Mod(t.X - 1, settings.Width), t.Y];
 		}
 		protected override Tile GetRight(Tile t)
 		{
-			return Tiles[MathHelper.Mod(t.X + 1, settings.Width), t.Y];
+			return GenerationResult.Tiles[MathHelper.Mod(t.X + 1, settings.Width), t.Y];
 		}
 	}
 }
