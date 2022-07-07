@@ -1,5 +1,5 @@
 # WorldGenerator
-FNA Port of https://github.com/jongallant/WorldGeneratorFinal
+FNA/MonoGame Port of https://github.com/jongallant/WorldGeneratorFinal
 
 # Building from Source Code for MonoGame
 Open WorldGenerator.MonoGame.sln in the IDE.
