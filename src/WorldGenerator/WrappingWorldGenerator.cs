@@ -71,7 +71,7 @@ namespace WorldGenerator
 			HeatData = new MapData(settings.Width, settings.Height);
 			MoistureData = new MapData(settings.Width, settings.Height);
 
-			var totalSize = settings.Width * settings.Height;
+			tasks = settings.Width * settings.Height;
 			// loop through each x,y point - get height value
 			for (var x = 0; x < settings.Width; x++)
 			{
@@ -82,7 +82,6 @@ namespace WorldGenerator
 					if (settings.MultiThreadedGeneration)
 					{
 						ThreadPool.QueueUserWorkItem(ProcessPoint, p);
-						Interlocked.Increment(ref tasks);
 					}
 					else
 					{
@@ -145,16 +144,8 @@ namespace WorldGenerator
 			HeatData.Data[x, y] = heatValue;
 			MoistureData.Data[x, y] = moistureValue;
 
-			if (settings.MultiThreadedGeneration)
-			{
-				Interlocked.Decrement(ref tasks);
-				LogInfo("Points left: {0}", tasks);
-			}
-			else
-			{
-				var pointsLeft = settings.Width * settings.Height - (x * settings.Height + y);
-				LogInfo("Points left: {0}", pointsLeft);
-			}
+			Interlocked.Decrement(ref tasks);
+			LogInfo("Points left: {0}", tasks);
 		}
 
 		protected override Tile GetTop(Tile t)

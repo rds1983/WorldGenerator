@@ -6,6 +6,18 @@ namespace WorldGenerator
 {
 	public abstract class Generator
 	{
+		private readonly struct TileDirection
+		{
+			public readonly Tile Tile;
+			public readonly Direction Direction;
+
+			public TileDirection(Tile tile, Direction direction)
+			{
+				Tile = tile;
+				Direction = direction;
+			}
+		}
+
 		protected int Seed;
 		protected readonly GeneratorSettings settings;
 		private Action<string> infoHandler;
@@ -325,8 +337,8 @@ namespace WorldGenerator
 					// Figure out the direction this river will try to flow
 					river.CurrentDirection = tile.GetLowestNeighbor(this);
 
-					// Recursively find a path to water
-					FindPathToWater(tile, river.CurrentDirection, ref river);
+					// Find a path to water
+					FindPathToWater(new TileDirection(tile, river.CurrentDirection), ref river);
 
 					// Validate the generated river 
 					if (river.TurnCount < settings.MinRiverTurns || river.Tiles.Count < settings.MinRiverLength || river.Intersections > settings.MaxRiverIntersections)
@@ -565,116 +577,124 @@ namespace WorldGenerator
 			}
 		}
 
-		private void FindPathToWater(Tile tile, Direction direction, ref River river)
+		private void FindPathToWater(TileDirection? td, ref River river)
 		{
-			if (tile.Rivers.Contains(river))
-				return;
-
-			// check if there is already a river on this tile
-			if (tile.Rivers.Count > 0)
-				river.Intersections++;
-
-			river.AddTile(tile);
-
-			// get neighbors
-			Tile left = GetLeft(tile);
-			Tile right = GetRight(tile);
-			Tile top = GetTop(tile);
-			Tile bottom = GetBottom(tile);
-
-			float leftValue = int.MaxValue;
-			float rightValue = int.MaxValue;
-			float topValue = int.MaxValue;
-			float bottomValue = int.MaxValue;
-
-			// query height values of neighbors
-			if (left != null && left.GetRiverNeighborCount(river) < 2 && !river.Tiles.Contains(left))
-				leftValue = left.HeightValue;
-			if (right != null && right.GetRiverNeighborCount(river) < 2 && !river.Tiles.Contains(right))
-				rightValue = right.HeightValue;
-			if (top != null && top.GetRiverNeighborCount(river) < 2 && !river.Tiles.Contains(top))
-				topValue = top.HeightValue;
-			if (bottom != null && bottom.GetRiverNeighborCount(river) < 2 && !river.Tiles.Contains(bottom))
-				bottomValue = bottom.HeightValue;
-
-			// if neighbor is existing river that is not this one, flow into it
-			if (bottom != null && bottom.Rivers.Count == 0 && !bottom.Collidable)
-				bottomValue = 0;
-			if (top != null && top.Rivers.Count == 0 && !top.Collidable)
-				topValue = 0;
-			if (left != null && left.Rivers.Count == 0 && !left.Collidable)
-				leftValue = 0;
-			if (right != null && right.Rivers.Count == 0 && !right.Collidable)
-				rightValue = 0;
-
-			// override flow direction if a tile is significantly lower
-			if (direction == Direction.Left)
-				if (MathF.Abs(rightValue - leftValue) < 0.1f)
-					rightValue = int.MaxValue;
-			if (direction == Direction.Right)
-				if (MathF.Abs(rightValue - leftValue) < 0.1f)
-					leftValue = int.MaxValue;
-			if (direction == Direction.Top)
-				if (MathF.Abs(topValue - bottomValue) < 0.1f)
-					bottomValue = int.MaxValue;
-			if (direction == Direction.Bottom)
-				if (MathF.Abs(topValue - bottomValue) < 0.1f)
-					topValue = int.MaxValue;
-
-			// find mininum
-			float min = MathF.Min(MathF.Min(MathF.Min(leftValue, rightValue), topValue), bottomValue);
-
-			// if no minimum found - exit
-			if (min == int.MaxValue)
-				return;
-
-			//Move to next neighbor
-			if (min == leftValue)
+			while (td != null)
 			{
-				if (left != null && left.Collidable)
+				var tile = td.Value.Tile;
+				var direction = td.Value.Direction;
+
+				td = null;
+				if (tile.Rivers.Contains(river))
+					continue;
+
+				// check if there is already a river on this tile
+				if (tile.Rivers.Count > 0)
+					river.Intersections++;
+
+				river.AddTile(tile);
+
+				// get neighbors
+				Tile left = GetLeft(tile);
+				Tile right = GetRight(tile);
+				Tile top = GetTop(tile);
+				Tile bottom = GetBottom(tile);
+
+				float leftValue = int.MaxValue;
+				float rightValue = int.MaxValue;
+				float topValue = int.MaxValue;
+				float bottomValue = int.MaxValue;
+
+				// query height values of neighbors
+				if (left != null && left.GetRiverNeighborCount(river) < 2 && !river.Tiles.Contains(left))
+					leftValue = left.HeightValue;
+				if (right != null && right.GetRiverNeighborCount(river) < 2 && !river.Tiles.Contains(right))
+					rightValue = right.HeightValue;
+				if (top != null && top.GetRiverNeighborCount(river) < 2 && !river.Tiles.Contains(top))
+					topValue = top.HeightValue;
+				if (bottom != null && bottom.GetRiverNeighborCount(river) < 2 && !river.Tiles.Contains(bottom))
+					bottomValue = bottom.HeightValue;
+
+				// if neighbor is existing river that is not this one, flow into it
+				if (bottom != null && bottom.Rivers.Count == 0 && !bottom.Collidable)
+					bottomValue = 0;
+				if (top != null && top.Rivers.Count == 0 && !top.Collidable)
+					topValue = 0;
+				if (left != null && left.Rivers.Count == 0 && !left.Collidable)
+					leftValue = 0;
+				if (right != null && right.Rivers.Count == 0 && !right.Collidable)
+					rightValue = 0;
+
+				// override flow direction if a tile is significantly lower
+				if (direction == Direction.Left)
+					if (MathF.Abs(rightValue - leftValue) < 0.1f)
+						rightValue = int.MaxValue;
+				if (direction == Direction.Right)
+					if (MathF.Abs(rightValue - leftValue) < 0.1f)
+						leftValue = int.MaxValue;
+				if (direction == Direction.Top)
+					if (MathF.Abs(topValue - bottomValue) < 0.1f)
+						bottomValue = int.MaxValue;
+				if (direction == Direction.Bottom)
+					if (MathF.Abs(topValue - bottomValue) < 0.1f)
+						topValue = int.MaxValue;
+
+				// find mininum
+				float min = MathF.Min(MathF.Min(MathF.Min(leftValue, rightValue), topValue), bottomValue);
+
+				// if no minimum found - exit
+				if (min == int.MaxValue)
+					continue;
+
+				//Move to next neighbor
+				if (min == leftValue)
 				{
-					if (river.CurrentDirection != Direction.Left)
+					if (left != null && left.Collidable)
 					{
-						river.TurnCount++;
-						river.CurrentDirection = Direction.Left;
+						if (river.CurrentDirection != Direction.Left)
+						{
+							river.TurnCount++;
+							river.CurrentDirection = Direction.Left;
+						}
+
+						td = new TileDirection(left, direction);
 					}
-					FindPathToWater(left, direction, ref river);
 				}
-			}
-			else if (min == rightValue)
-			{
-				if (right != null && right.Collidable)
+				else if (min == rightValue)
 				{
-					if (river.CurrentDirection != Direction.Right)
+					if (right != null && right.Collidable)
 					{
-						river.TurnCount++;
-						river.CurrentDirection = Direction.Right;
+						if (river.CurrentDirection != Direction.Right)
+						{
+							river.TurnCount++;
+							river.CurrentDirection = Direction.Right;
+						}
+						td = new TileDirection(right, direction);
 					}
-					FindPathToWater(right, direction, ref river);
 				}
-			}
-			else if (min == bottomValue)
-			{
-				if (bottom != null && bottom.Collidable)
+				else if (min == bottomValue)
 				{
-					if (river.CurrentDirection != Direction.Bottom)
+					if (bottom != null && bottom.Collidable)
 					{
-						river.TurnCount++;
-						river.CurrentDirection = Direction.Bottom;
+						if (river.CurrentDirection != Direction.Bottom)
+						{
+							river.TurnCount++;
+							river.CurrentDirection = Direction.Bottom;
+						}
+						td = new TileDirection(bottom, direction);
 					}
-					FindPathToWater(bottom, direction, ref river);
 				}
-			}
-			else if (min == topValue)
-			{
-				if (top != null && top.Collidable)
+				else if (min == topValue)
 				{
-					if (river.CurrentDirection != Direction.Top)
+					if (top != null && top.Collidable)
 					{
-						river.TurnCount++;
-						river.CurrentDirection = Direction.Top;
+						if (river.CurrentDirection != Direction.Top)
+						{
+							river.TurnCount++;
+							river.CurrentDirection = Direction.Top;
+						}
+						td = new TileDirection(top, direction);
 					}
-					FindPathToWater(top, direction, ref river);
 				}
 			}
 		}

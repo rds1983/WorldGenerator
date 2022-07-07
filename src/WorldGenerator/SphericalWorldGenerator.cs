@@ -103,7 +103,7 @@ namespace WorldGenerator
 
 			float curLat = southLatBound;
 
-			var totalSize = settings.Width * settings.Height;
+			tasks = settings.Width * settings.Height;
 
 			// Loop through each tile using its lat/long coordinates
 			for (var x = 0; x < settings.Width; x++)
@@ -117,7 +117,6 @@ namespace WorldGenerator
 					if (settings.MultiThreadedGeneration)
 					{
 						ThreadPool.QueueUserWorkItem(ProcessPoint, p);
-						Interlocked.Increment(ref tasks);
 					} else {
 						ProcessPoint(p);
 					}
@@ -195,14 +194,8 @@ namespace WorldGenerator
 			if (Clouds2.Data[x, y] < Clouds2.Min)
 				Clouds2.Min = Clouds2.Data[x, y];
 
-			if (settings.MultiThreadedGeneration)
-			{
-				Interlocked.Decrement(ref tasks);
-				LogInfo("Points left: {0}", tasks);
-			} else {
-				var pointsLeft = settings.Width * settings.Height - (x * settings.Height + y);
-				LogInfo("Points left: {0}", pointsLeft);
-			}
+			Interlocked.Decrement(ref tasks);
+			LogInfo("Points left: {0}", tasks);
 		}
 
 		// Convert Lat/Long coordinates to x/y/z for spherical mapping
