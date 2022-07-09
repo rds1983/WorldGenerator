@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace WorldGenerator
 {
@@ -21,6 +23,7 @@ namespace WorldGenerator
 		protected int Seed;
 		protected readonly GeneratorSettings settings;
 		private Action<string> infoHandler;
+		protected int tasksLeft;
 
 		protected MapData HeightData;
 		protected MapData HeatData;
@@ -29,6 +32,7 @@ namespace WorldGenerator
 		protected MapData Clouds2;
 
 		public GenerationResult GenerationResult;
+
 
 		private BiomeType[,] BiomeTable = new BiomeType[6, 6]
 		{
@@ -190,18 +194,23 @@ namespace WorldGenerator
 
 		private void AdjustMoistureMap()
 		{
-			for (var x = 0; x < settings.Width; x++)
+			tasksLeft = settings.Width;
+
+			Parallel.For(0, settings.Width, x =>
 			{
 				for (var y = 0; y < settings.Height; y++)
 				{
-
 					Tile t = GenerationResult.Tiles[x, y];
+
 					if (t.HeightType == HeightType.River)
 					{
-						AddMoisture(t, (int)60);
+						AddMoisture(t, 60);
 					}
 				}
-			}
+
+				Interlocked.Decrement(ref tasksLeft);
+				LogInfo("AdjustMoistureMap Columns left: {0}", tasksLeft);
+			});
 		}
 
 		private void DigRiverGroups()

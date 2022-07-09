@@ -1,33 +1,17 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using TinkerWorX.AccidentalNoiseLibrary;
 
 namespace WorldGenerator
 {
 	public class SphericalWorldGenerator : Generator
 	{
-		private readonly struct TaskParams
-		{
-			public readonly int x;
-			public readonly int y;
-			public readonly float curLon;
-			public readonly float curLat;
-
-			public TaskParams(int x, int y, float curLon, float curLat)
-			{
-				this.x = x;
-				this.y = y;
-				this.curLon = curLon;
-				this.curLat = curLat;
-			}
-		}
-
 		protected ImplicitFractal HeightMap;
 		protected ImplicitFractal HeatMap;
 		protected ImplicitFractal MoistureMap;
 		protected ImplicitFractal Cloud1Map;
 		protected ImplicitFractal Cloud2Map;
-		private int tasks;
 
 		public SphericalWorldGenerator(GeneratorSettings settings, Action<string> infoHandler = null) : base(settings, infoHandler)
 		{
@@ -92,110 +76,83 @@ namespace WorldGenerator
 			// Define our map area in latitude/longitude
 			float southLatBound = -180;
 			float northLatBound = 180;
+			float latExtent = northLatBound - southLatBound;
+
+			float yDelta = latExtent / settings.Height;
+
+			tasksLeft = settings.Width;
+
+			// Loop through each tile using its lat/long coordinates
+			Parallel.For(0, settings.Width, x =>
+			{
+				ProcessColumn(x, southLatBound + x * yDelta);
+			});
+		}
+
+		private void ProcessColumn(int x, float curLat)
+		{
 			float westLonBound = -90;
 			float eastLonBound = 90;
 
 			float lonExtent = eastLonBound - westLonBound;
-			float latExtent = northLatBound - southLatBound;
-
 			float xDelta = lonExtent / settings.Width;
-			float yDelta = latExtent / settings.Height;
 
-			float curLat = southLatBound;
-
-			tasks = settings.Width * settings.Height;
-
-			// Loop through each tile using its lat/long coordinates
-			for (var x = 0; x < settings.Width; x++)
+			var curLon = westLonBound;
+			for (var y = 0; y < settings.Height; y++)
 			{
-				var curLon = westLonBound;
+				float x1 = 0, y1 = 0, z1 = 0;
 
-				for (var y = 0; y < settings.Height; y++)
-				{
-					var p = new TaskParams(x, y, curLon, curLat);
+				// Convert this lat/lon to x/y/z
+				LatLonToXYZ(curLat, curLon, ref x1, ref y1, ref z1);
 
-					if (settings.MultiThreadedGeneration)
-					{
-						ThreadPool.QueueUserWorkItem(ProcessPoint, p);
-					} else {
-						ProcessPoint(p);
-					}
+				// Heat data
+				float sphereValue = (float)HeatMap.Get(x1, y1, z1);
+				if (sphereValue > HeatData.Max)
+					HeatData.Max = sphereValue;
+				if (sphereValue < HeatData.Min)
+					HeatData.Min = sphereValue;
+				HeatData.Data[x, y] = sphereValue;
 
-					curLon += xDelta;
-				}
-				curLat += yDelta;
+				float coldness = MathF.Abs(curLon) / 90f;
+				float heat = 1 - MathF.Abs(curLon) / 90f;
+				HeatData.Data[x, y] += heat;
+				HeatData.Data[x, y] -= coldness;
+
+				// Height Data
+				float heightValue = (float)HeightMap.Get(x1, y1, z1);
+				if (heightValue > HeightData.Max)
+					HeightData.Max = heightValue;
+				if (heightValue < HeightData.Min)
+					HeightData.Min = heightValue;
+				HeightData.Data[x, y] = heightValue;
+
+				// Moisture Data
+				float moistureValue = (float)MoistureMap.Get(x1, y1, z1);
+				if (moistureValue > MoistureData.Max)
+					MoistureData.Max = moistureValue;
+				if (moistureValue < MoistureData.Min)
+					MoistureData.Min = moistureValue;
+				MoistureData.Data[x, y] = moistureValue;
+
+				// Cloud Data
+				Clouds1.Data[x, y] = (float)Cloud1Map.Get(x1, y1, z1);
+				if (Clouds1.Data[x, y] > Clouds1.Max)
+					Clouds1.Max = Clouds1.Data[x, y];
+				if (Clouds1.Data[x, y] < Clouds1.Min)
+					Clouds1.Min = Clouds1.Data[x, y];
+
+				Clouds2.Data[x, y] = (float)Cloud2Map.Get(x1, y1, z1);
+				if (Clouds2.Data[x, y] > Clouds2.Max)
+					Clouds2.Max = Clouds2.Data[x, y];
+				if (Clouds2.Data[x, y] < Clouds2.Min)
+					Clouds2.Min = Clouds2.Data[x, y];
+
+				curLon += xDelta;
+
 			}
 
-			if (settings.MultiThreadedGeneration)
-			{
-				while (true)
-				{
-					Thread.Sleep(1000);
-					if (tasks <= 0)
-					{
-						break;
-					}
-				}
-			}
-		}
-
-		private void ProcessPoint(object state)
-		{
-			var p = (TaskParams)state;
-			var x = p.x;
-			var y = p.y;
-			var curLon = p.curLon;
-			var curLat = p.curLat;
-
-			float x1 = 0, y1 = 0, z1 = 0;
-
-			// Convert this lat/lon to x/y/z
-			LatLonToXYZ(curLat, curLon, ref x1, ref y1, ref z1);
-
-			// Heat data
-			float sphereValue = (float)HeatMap.Get(x1, y1, z1);
-			if (sphereValue > HeatData.Max)
-				HeatData.Max = sphereValue;
-			if (sphereValue < HeatData.Min)
-				HeatData.Min = sphereValue;
-			HeatData.Data[x, y] = sphereValue;
-
-			float coldness = MathF.Abs(curLon) / 90f;
-			float heat = 1 - MathF.Abs(curLon) / 90f;
-			HeatData.Data[x, y] += heat;
-			HeatData.Data[x, y] -= coldness;
-
-			// Height Data
-			float heightValue = (float)HeightMap.Get(x1, y1, z1);
-			if (heightValue > HeightData.Max)
-				HeightData.Max = heightValue;
-			if (heightValue < HeightData.Min)
-				HeightData.Min = heightValue;
-			HeightData.Data[x, y] = heightValue;
-
-			// Moisture Data
-			float moistureValue = (float)MoistureMap.Get(x1, y1, z1);
-			if (moistureValue > MoistureData.Max)
-				MoistureData.Max = moistureValue;
-			if (moistureValue < MoistureData.Min)
-				MoistureData.Min = moistureValue;
-			MoistureData.Data[x, y] = moistureValue;
-
-			// Cloud Data
-			Clouds1.Data[x, y] = (float)Cloud1Map.Get(x1, y1, z1);
-			if (Clouds1.Data[x, y] > Clouds1.Max)
-				Clouds1.Max = Clouds1.Data[x, y];
-			if (Clouds1.Data[x, y] < Clouds1.Min)
-				Clouds1.Min = Clouds1.Data[x, y];
-
-			Clouds2.Data[x, y] = (float)Cloud2Map.Get(x1, y1, z1);
-			if (Clouds2.Data[x, y] > Clouds2.Max)
-				Clouds2.Max = Clouds2.Data[x, y];
-			if (Clouds2.Data[x, y] < Clouds2.Min)
-				Clouds2.Min = Clouds2.Data[x, y];
-
-			Interlocked.Decrement(ref tasks);
-			LogInfo("Points left: {0}", tasks);
+			Interlocked.Decrement(ref tasksLeft);
+			LogInfo("GetData Columns left: {0}", tasksLeft);
 		}
 
 		// Convert Lat/Long coordinates to x/y/z for spherical mapping

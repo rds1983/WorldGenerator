@@ -13,6 +13,7 @@ namespace WorldGenerator.App.ThreeD
 
 		private Mesh _mesh;
 		private BasicEffect _basicEffect;
+
 		private readonly Camera _camera = new Camera();
 		private float _angle;
 
@@ -91,11 +92,15 @@ namespace WorldGenerator.App.ThreeD
 			{
 				pass.Apply();
 
+#if FNA
 				device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0,
-					0,
-					_mesh.VertexBuffer.VertexCount,
-					0,
-					_mesh.PrimitiveCount);
+				0,
+				_mesh.VertexBuffer.VertexCount,
+				0,
+				_mesh.PrimitiveCount);
+#else
+				device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _mesh.PrimitiveCount);
+#endif
 			}
 
 			// Update the rotation angle
