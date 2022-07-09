@@ -13,7 +13,7 @@ namespace WorldGenerator
 		protected ImplicitFractal Cloud1Map;
 		protected ImplicitFractal Cloud2Map;
 
-		public SphericalWorldGenerator(GeneratorSettings settings, Action<string> infoHandler = null) : base(settings, infoHandler)
+		public SphericalWorldGenerator(GeneratorSettings settings, ILog logHandler = null) : base(settings, logHandler)
 		{
 		}
 
@@ -87,6 +87,8 @@ namespace WorldGenerator
 			{
 				ProcessColumn(x, southLatBound + x * yDelta);
 			});
+
+			LogProgress(null);
 		}
 
 		private void ProcessColumn(int x, float curLat)
@@ -152,7 +154,7 @@ namespace WorldGenerator
 			}
 
 			Interlocked.Decrement(ref tasksLeft);
-			LogInfo("GetData Columns left: {0}", tasksLeft);
+			LogProgress((settings.Width - tasksLeft) / (float)settings.Width);
 		}
 
 		// Convert Lat/Long coordinates to x/y/z for spherical mapping

@@ -39,8 +39,11 @@
             <Image HorizontalAlignment="Center" VerticalAlignment="Center" Id="_image2DView" />
           </Panel>
         </VerticalStackPanel>
-        <Label Text="GetData" VerticalAlignment="Bottom" Id="_labelLog" />
-     </Panel>
+        <Panel VerticalAlignment="Bottom">
+          <HorizontalProgressBar Value="50" Height="20" Id="_progressLog" />
+          <Label Text="GetData" HorizontalAlignment="Center" Id="_labelLog" />
+        </Panel>
+      </Panel>
     </HorizontalSplitPane>
   </VerticalStackPanel>
 </Project>

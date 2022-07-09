@@ -10,9 +10,8 @@ namespace WorldGenerator
 		protected ImplicitFractal HeightMap;
 		protected ImplicitCombiner HeatMap;
 		protected ImplicitFractal MoistureMap;
-		private int tasks;
 
-		public WrappingWorldGenerator(GeneratorSettings settings, Action<string> infoHandler = null) : base(settings, infoHandler)
+		public WrappingWorldGenerator(GeneratorSettings settings, ILog logHandler = null) : base(settings, logHandler)
 		{
 		}
 
@@ -60,9 +59,10 @@ namespace WorldGenerator
 			HeatData = new MapData(settings.Width, settings.Height);
 			MoistureData = new MapData(settings.Width, settings.Height);
 
-			tasks = settings.Width;
+			tasksLeft = settings.Width;
 			
 			Parallel.For(0, settings.Width, x => ProcessColumn(x));
+			LogProgress(null);
 		}
 
 		private void ProcessColumn(int x)
@@ -105,8 +105,8 @@ namespace WorldGenerator
 				MoistureData.Data[x, y] = moistureValue;
 			}
 
-			Interlocked.Decrement(ref tasks);
-			LogInfo("GetData Columns left: {0}", tasks);
+			Interlocked.Decrement(ref tasksLeft);
+			LogProgress((settings.Width - tasksLeft) / (float)settings.Width);
 		}
 
 		protected override Tile GetTop(Tile t)

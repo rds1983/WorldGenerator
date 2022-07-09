@@ -22,7 +22,7 @@ namespace WorldGenerator
 
 		protected int Seed;
 		protected readonly GeneratorSettings settings;
-		private Action<string> infoHandler;
+		private ILog logHandler;
 		protected int tasksLeft;
 
 		protected MapData HeightData;
@@ -45,20 +45,30 @@ namespace WorldGenerator
 			{ BiomeType.Ice, BiomeType.Tundra, BiomeType.BorealForest, BiomeType.TemperateRainforest, BiomeType.TropicalRainforest,  BiomeType.TropicalRainforest }   //WETTEST
 		};
 
-		public Generator(GeneratorSettings settings, Action<string> infoHandler)
+		public Generator(GeneratorSettings settings, ILog logHandler)
 		{
 			this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
-			this.infoHandler = infoHandler;
+			this.logHandler = logHandler;
 		}
 
 		public void LogInfo(string message, params object[] args)
 		{
-			if (infoHandler == null)
+			if (logHandler == null)
 			{
 				return;
 			}
 
-			infoHandler(Utils.FormatMessage(message, args));
+			logHandler.Log(Utils.FormatMessage(message, args));
+		}
+
+		public void LogProgress(float? progress)
+		{
+			if (logHandler == null)
+			{
+				return;
+			}
+
+			logHandler.SetProgress(progress);
 		}
 
 		public void Go()
@@ -209,8 +219,10 @@ namespace WorldGenerator
 				}
 
 				Interlocked.Decrement(ref tasksLeft);
-				LogInfo("AdjustMoistureMap Columns left: {0}", tasksLeft);
+				LogProgress((settings.Width - tasksLeft) / (float)settings.Width);
 			});
+
+			LogProgress(null);
 		}
 
 		private void DigRiverGroups()

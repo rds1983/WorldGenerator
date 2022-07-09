@@ -17,6 +17,34 @@ namespace WorldGenerator.App.UI
 			View3D
 		};
 
+		private class Log : ILog
+		{
+			private readonly MainForm _mainForm;
+
+			public Log(MainForm mainForm)
+			{
+				_mainForm = mainForm;
+			}
+
+			public void SetProgress(float? progress)
+			{
+				if (progress == null)
+				{
+					_mainForm._progressLog.Visible = false;
+				}
+				else
+				{
+					_mainForm._progressLog.Visible = true;
+					_mainForm._progressLog.Value = progress.Value * _mainForm._progressLog.Maximum;
+				}
+			}
+
+			void ILog.Log(string message)
+			{
+				_mainForm.LogMessage(message);
+			}
+		}
+
 		private PropertyGrid _propertyGrid;
 		private GeneratorSettings _config;
 		private readonly List<Action> _uiThreadActions = new List<Action>();
@@ -29,6 +57,8 @@ namespace WorldGenerator.App.UI
 		public MainForm()
 		{
 			BuildUI();
+
+			_progressLog.Visible = false;
 
 			_buttonWrapped.IsPressed = true;
 			_buttonBiomeMap.IsPressed = true;
@@ -71,20 +101,18 @@ namespace WorldGenerator.App.UI
 				{
 					_buttonGenerate.Enabled = false;
 					_labelLog.Text = "Starting...";
-
-					// HACK: Recalculate layout so _logView size gets updated
-					Desktop.UpdateLayout();
 				});
 
 				Generator generator;
+				var logger = new Log(this);
 
 				if (_buttonWrapped.IsPressed)
 				{
-					generator = new WrappingWorldGenerator(_config, LogMessage);
+					generator = new WrappingWorldGenerator(_config, logger);
 				}
 				else
 				{
-					generator = new SphericalWorldGenerator(_config, LogMessage);
+					generator = new SphericalWorldGenerator(_config, logger);
 				}
 
 				generator.Go();
