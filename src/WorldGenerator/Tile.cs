@@ -53,33 +53,55 @@ namespace WorldGenerator
 
 	public class Tile
 	{
+		private static readonly BiomeType[,] BiomeTable = new BiomeType[6, 6]
+		{
+			//COLDEST        //COLDER          //COLD                  //HOT                          //HOTTER                       //HOTTEST
+			{ BiomeType.Ice, BiomeType.Tundra, BiomeType.Grassland,    BiomeType.Desert,              BiomeType.Desert,              BiomeType.Desert },              //DRYEST
+			{ BiomeType.Ice, BiomeType.Tundra, BiomeType.Grassland,    BiomeType.Desert,              BiomeType.Desert,              BiomeType.Desert },              //DRYER
+			{ BiomeType.Ice, BiomeType.Tundra, BiomeType.Woodland,     BiomeType.Woodland,            BiomeType.Savanna,             BiomeType.Savanna },             //DRY
+			{ BiomeType.Ice, BiomeType.Tundra, BiomeType.BorealForest, BiomeType.Woodland,            BiomeType.Savanna,             BiomeType.Savanna },             //WET
+			{ BiomeType.Ice, BiomeType.Tundra, BiomeType.BorealForest, BiomeType.SeasonalForest,      BiomeType.TropicalRainforest,  BiomeType.TropicalRainforest },  //WETTER
+			{ BiomeType.Ice, BiomeType.Tundra, BiomeType.BorealForest, BiomeType.TemperateRainforest, BiomeType.TropicalRainforest,  BiomeType.TropicalRainforest }   //WETTEST
+		};
+
 		public HeightType HeightType;
 		public HeatType HeatType;
 		public MoistureType MoistureType;
-		public BiomeType BiomeType;
+
+		public BiomeType BiomeType
+		{
+			get
+			{
+				if (!Collidable) return BiomeType.Desert;
+
+				return BiomeTable[(int)MoistureType, (int)HeatType];
+			}
+		}
 
 		public float Cloud1Value { get; set; }
 		public float Cloud2Value { get; set; }
 		public float HeightValue { get; set; }
 		public float HeatValue { get; set; }
 		public float MoistureValue { get; set; }
-		public int X, Y;
+		
 		public int Bitmask;
 		public int BiomeBitmask;
 
-		public Tile Left;
-		public Tile Right;
-		public Tile Top;
-		public Tile Bottom;
+		public int X, Y;
+		internal Tile Left;
+		internal Tile Right;
+		internal Tile Top;
+		internal Tile Bottom;
 
-		public bool Collidable;
-		public bool FloodFilled;
+		public bool Collidable => HeightType != HeightType.DeepWater && HeightType != HeightType.ShallowWater && HeightType != HeightType.River;
+		
+		internal bool FloodFilled;
 
-		public Color Color = Color.Black;
+		internal Color Color = Color.Black;
 
-		public List<River> Rivers = new List<River>();
+		internal List<River> Rivers = new List<River>();
 
-		public int RiverSize { get; set; }
+		internal int RiverSize { get; set; }
 
 		public Tile()
 		{
@@ -166,7 +188,6 @@ namespace WorldGenerator
 			SetRiverPath(river);
 			HeightType = HeightType.River;
 			HeightValue = 0;
-			Collidable = false;
 		}
 
 		// This function got messy.  Sorry.

@@ -97,26 +97,29 @@ namespace WorldGenerator
 			{
 				for (var y = 0; y < 128; y++)
 				{
+					var color = new Color(0, 0, 0, 0);
 					if (x < 10)
-						pixels[x + y * 128] = Ice;
+						color = Ice;
 					else if (x < 20)
-						pixels[x + y * 128] = Desert;
+						color = Desert;
 					else if (x < 30)
-						pixels[x + y * 128] = Savanna;
+						color = Savanna;
 					else if (x < 40)
-						pixels[x + y * 128] = TropicalRainforest;
+						color = TropicalRainforest;
 					else if (x < 50)
-						pixels[x + y * 128] = Tundra;
+						color = Tundra;
 					else if (x < 60)
-						pixels[x + y * 128] = TemperateRainforest;
+						color = TemperateRainforest;
 					else if (x < 70)
-						pixels[x + y * 128] = Grassland;
+						color = Grassland;
 					else if (x < 80)
-						pixels[x + y * 128] = SeasonalForest;
+						color = SeasonalForest;
 					else if (x < 90)
-						pixels[x + y * 128] = BorealForest;
+						color = BorealForest;
 					else if (x < 100)
-						pixels[x + y * 128] = Woodland;
+						color = Woodland;
+
+					pixels[x + y * 128] = color;
 				}
 			}
 
@@ -133,38 +136,38 @@ namespace WorldGenerator
 			{
 				for (var y = 0; y < height; y++)
 				{
+					var colorValue = 0.0f;
 					switch (tiles[x, y].HeightType)
 					{
 						case HeightType.DeepWater:
-							pixels[x + y * width] = new Color(0, 0, 0, 1);
-							break;
 						case HeightType.ShallowWater:
-							pixels[x + y * width] = new Color(0, 0, 0, 1);
+						case HeightType.River:
 							break;
 						case HeightType.Sand:
-							pixels[x + y * width] = new Color(0.3f, 0.3f, 0.3f, 1);
+							colorValue = 0.3f;
 							break;
 						case HeightType.Grass:
-							pixels[x + y * width] = new Color(0.45f, 0.45f, 0.45f, 1);
+							colorValue = 0.45f;
 							break;
 						case HeightType.Forest:
-							pixels[x + y * width] = new Color(0.6f, 0.6f, 0.6f, 1);
+							colorValue = 0.6f;
 							break;
 						case HeightType.Rock:
-							pixels[x + y * width] = new Color(0.75f, 0.75f, 0.75f, 1);
+							colorValue = 0.75f;
 							break;
 						case HeightType.Snow:
-							pixels[x + y * width] = new Color(1, 1, 1, 1);
-							break;
-						case HeightType.River:
-							pixels[x + y * width] = new Color(0, 0, 0, 1);
+							colorValue = 1.0f;
 							break;
 					}
 
+					var color = new Color(colorValue, colorValue, colorValue, 1f);
+
 					if (!tiles[x, y].Collidable)
 					{
-						pixels[x + y * width] = Color.Lerp(Color.White, Color.Black, tiles[x, y].HeightValue * 2);
+						color = Color.Lerp(Color.White, Color.Black, tiles[x, y].HeightValue * 2);
 					}
+
+					pixels[x + y * width] = color;
 				}
 			}
 
@@ -181,33 +184,31 @@ namespace WorldGenerator
 			{
 				for (var y = 0; y < height; y++)
 				{
+					var colorValue = 0.0f;
 					switch (tiles[x, y].HeightType)
 					{
 						case HeightType.DeepWater:
-							pixels[x + y * width] = new Color(0, 0, 0, 1);
-							break;
 						case HeightType.ShallowWater:
-							pixels[x + y * width] = new Color(0, 0, 0, 1);
+						case HeightType.River:
 							break;
 						case HeightType.Sand:
-							pixels[x + y * width] = new Color(0.3f, 0.3f, 0.3f, 1);
+							colorValue = 0.3f;
 							break;
 						case HeightType.Grass:
-							pixels[x + y * width] = new Color(0.45f, 0.45f, 0.45f, 1);
+							colorValue = 0.45f;
 							break;
 						case HeightType.Forest:
-							pixels[x + y * width] = new Color(0.6f, 0.6f, 0.6f, 1);
+							colorValue = 0.6f;
 							break;
 						case HeightType.Rock:
-							pixels[x + y * width] = new Color(0.75f, 0.75f, 0.75f, 1);
+							colorValue = 0.75f;
 							break;
 						case HeightType.Snow:
-							pixels[x + y * width] = new Color(1, 1, 1, 1);
-							break;
-						case HeightType.River:
-							pixels[x + y * width] = new Color(0, 0, 0, 1);
+							colorValue = 1.0f;
 							break;
 					}
+
+					pixels[x + y * width] = new Color(colorValue, colorValue, colorValue, 1f);
 				}
 			}
 
@@ -224,31 +225,34 @@ namespace WorldGenerator
 			{
 				for (var y = 0; y < height; y++)
 				{
+					var color = Color.Black;
 					switch (tiles[x, y].HeatType)
 					{
 						case HeatType.Coldest:
-							pixels[x + y * width] = Coldest;
+							color = Coldest;
 							break;
 						case HeatType.Colder:
-							pixels[x + y * width] = Colder;
+							color = Colder;
 							break;
 						case HeatType.Cold:
-							pixels[x + y * width] = Cold;
+							color = Cold;
 							break;
 						case HeatType.Warm:
-							pixels[x + y * width] = Warm;
+							color = Warm;
 							break;
 						case HeatType.Warmer:
-							pixels[x + y * width] = Warmer;
+							color = Warmer;
 							break;
 						case HeatType.Warmest:
-							pixels[x + y * width] = Warmest;
+							color = Warmest;
 							break;
 					}
 
 					//darken the color if a edge tile
 					if ((int)tiles[x, y].HeightType > 2 && tiles[x, y].Bitmask != 15)
-						pixels[x + y * width] = Color.Lerp(pixels[x + y * width], Color.Black, 0.4f);
+						color = Color.Lerp(color, Color.Black, 0.4f);
+
+					pixels[x + y * width] = color;
 				}
 			}
 
@@ -267,18 +271,21 @@ namespace WorldGenerator
 				{
 					Tile t = tiles[x, y];
 
+					Color color;
 					if (t.MoistureType == MoistureType.Dryest)
-						pixels[x + y * width] = Dryest;
+						color = Dryest;
 					else if (t.MoistureType == MoistureType.Dryer)
-						pixels[x + y * width] = Dryer;
+						color = Dryer;
 					else if (t.MoistureType == MoistureType.Dry)
-						pixels[x + y * width] = Dry;
+						color = Dry;
 					else if (t.MoistureType == MoistureType.Wet)
-						pixels[x + y * width] = Wet;
+						color = Wet;
 					else if (t.MoistureType == MoistureType.Wetter)
-						pixels[x + y * width] = Wetter;
+						color = Wetter;
 					else
-						pixels[x + y * width] = Wettest;
+						color = Wettest;
+
+					pixels[x + y * width] = color;
 				}
 			}
 
@@ -297,48 +304,49 @@ namespace WorldGenerator
 				{
 					BiomeType value = tiles[x, y].BiomeType;
 
+					var color = Color.Black;
 					switch (value)
 					{
 						case BiomeType.Ice:
-							pixels[x + y * width] = Ice;
+							color = Ice;
 							break;
 						case BiomeType.BorealForest:
-							pixels[x + y * width] = BorealForest;
+							color = BorealForest;
 							break;
 						case BiomeType.Desert:
-							pixels[x + y * width] = Desert;
+							color = Desert;
 							break;
 						case BiomeType.Grassland:
-							pixels[x + y * width] = Grassland;
+							color = Grassland;
 							break;
 						case BiomeType.SeasonalForest:
-							pixels[x + y * width] = SeasonalForest;
+							color = SeasonalForest;
 							break;
 						case BiomeType.Tundra:
-							pixels[x + y * width] = Tundra;
+							color = Tundra;
 							break;
 						case BiomeType.Savanna:
-							pixels[x + y * width] = Savanna;
+							color = Savanna;
 							break;
 						case BiomeType.TemperateRainforest:
-							pixels[x + y * width] = TemperateRainforest;
+							color = TemperateRainforest;
 							break;
 						case BiomeType.TropicalRainforest:
-							pixels[x + y * width] = TropicalRainforest;
+							color = TropicalRainforest;
 							break;
 						case BiomeType.Woodland:
-							pixels[x + y * width] = Woodland;
+							color = Woodland;
 							break;
 					}
 
 					// Water tiles
 					if (tiles[x, y].HeightType == HeightType.DeepWater)
 					{
-						pixels[x + y * width] = DeepColor;
+						color = DeepColor;
 					}
 					else if (tiles[x, y].HeightType == HeightType.ShallowWater)
 					{
-						pixels[x + y * width] = ShallowColor;
+						color = ShallowColor;
 					}
 
 					// draw rivers
@@ -347,13 +355,13 @@ namespace WorldGenerator
 						float heatValue = tiles[x, y].HeatValue;
 
 						if (tiles[x, y].HeatType == HeatType.Coldest)
-							pixels[x + y * width] = Color.Lerp(IceWater, ColdWater, (heatValue) / (coldest));
+							color = Color.Lerp(IceWater, ColdWater, (heatValue) / (coldest));
 						else if (tiles[x, y].HeatType == HeatType.Colder)
-							pixels[x + y * width] = Color.Lerp(ColdWater, RiverWater, (heatValue - coldest) / (colder - coldest));
+							color = Color.Lerp(ColdWater, RiverWater, (heatValue - coldest) / (colder - coldest));
 						else if (tiles[x, y].HeatType == HeatType.Cold)
-							pixels[x + y * width] = Color.Lerp(RiverWater, ShallowColor, (heatValue - colder) / (cold - colder));
+							color = Color.Lerp(RiverWater, ShallowColor, (heatValue - colder) / (cold - colder));
 						else
-							pixels[x + y * width] = ShallowColor;
+							color = ShallowColor;
 					}
 
 
@@ -361,8 +369,10 @@ namespace WorldGenerator
 					if (tiles[x, y].HeightType >= HeightType.Shore && tiles[x, y].HeightType != HeightType.River)
 					{
 						if (tiles[x, y].BiomeBitmask != 15)
-							pixels[x + y * width] = Color.Lerp(pixels[x + y * width], Color.Black, 0.35f);
+							color = Color.Lerp(color, Color.Black, 0.35f);
 					}
+
+					pixels[x + y * width] = color;
 				}
 			}
 

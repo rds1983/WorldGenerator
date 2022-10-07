@@ -11,6 +11,8 @@ namespace WorldGenerator
 		protected ImplicitCombiner HeatMap;
 		protected ImplicitFractal MoistureMap;
 
+		protected override MapType MapType => MapType.Wrapping;
+
 		public WrappingWorldGenerator(GeneratorSettings settings, ILog logHandler = null) : base(settings, logHandler)
 		{
 		}
@@ -107,23 +109,6 @@ namespace WorldGenerator
 
 			Interlocked.Decrement(ref tasksLeft);
 			LogProgress((settings.Width - tasksLeft) / (float)settings.Width);
-		}
-
-		protected override Tile GetTop(Tile t)
-		{
-			return GenerationResult.Tiles[t.X, MathHelper.Mod(t.Y - 1, settings.Height)];
-		}
-		protected override Tile GetBottom(Tile t)
-		{
-			return GenerationResult.Tiles[t.X, MathHelper.Mod(t.Y + 1, settings.Height)];
-		}
-		protected override Tile GetLeft(Tile t)
-		{
-			return GenerationResult.Tiles[MathHelper.Mod(t.X - 1, settings.Width), t.Y];
-		}
-		protected override Tile GetRight(Tile t)
-		{
-			return GenerationResult.Tiles[MathHelper.Mod(t.X + 1, settings.Width), t.Y];
 		}
 	}
 }

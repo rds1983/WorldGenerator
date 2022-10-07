@@ -1,9 +1,12 @@
 using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D;
 using Myra.Graphics2D.TextureAtlases;
+using Myra.Graphics2D.UI.File;
 using Myra.Graphics2D.UI.Properties;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using WorldGenerator.App.ThreeD;
 
@@ -11,12 +14,6 @@ namespace WorldGenerator.App.UI
 {
 	public partial class MainForm
 	{
-		private enum ViewType
-		{
-			View2D,
-			View3D
-		};
-
 		private class Log : ILog
 		{
 			private readonly MainForm _mainForm;
@@ -52,7 +49,6 @@ namespace WorldGenerator.App.UI
 		private GenerationResult _result;
 		private View3D _view3d;
 		private Texture2D _textureHeight, _textureHeat, _textureMoisture, _textureBiome;
-		private ViewType _viewType = ViewType.View2D;
 
 		public MainForm()
 		{
@@ -81,6 +77,131 @@ namespace WorldGenerator.App.UI
 			_buttonHeatMap.PressedChanged += (s, a) => UpdateView();
 			_buttonMoistureMap.PressedChanged += (s, a) => UpdateView();
 			_buttonBiomeMap.PressedChanged += (s, a) => UpdateView();
+
+			UpdateSaveEnabled();
+
+			_image2DView.MouseMoved += (s, e) =>
+			{
+				if (_result == null)
+				{
+					return;
+				}
+
+				var local = _image2DView.ToLocal(Desktop.MousePosition);
+				var nx = local.X * _result.Width / _image2DView.ActualBounds.Width;
+				var ny = local.Y * _result.Height / _image2DView.ActualBounds.Height;
+
+				var tile = _result.Tiles[nx, ny];
+
+				Debug.WriteLine($"X={nx}, Y={ny}, Height={tile.HeightValue}, HeightType={tile.HeightType}, BiomeType={tile.BiomeType}");
+			};
+
+			_buttonSave.Click += (s, a) => SaveResult();
+			_buttonLoad.Click += (s, a) => LoadResult();
+		}
+
+		private void SaveResult()
+		{
+			var dialog = new FileDialog(FileDialogMode.SaveFile)
+			{
+				Filter = "*.bin"
+			};
+
+			dialog.Closed += (s, a) =>
+			{
+				if (!dialog.Result)
+				{
+					return;
+				}
+
+				using (var stream = File.Create(dialog.FilePath))
+				using (var writer = new BinaryWriter(stream))
+				{
+					writer.Write((int)_result.MapType);
+					writer.Write(_result.Width);
+					writer.Write(_result.Height);
+
+					for(var x = 0; x < _result.Width; ++x)
+					{
+						for (var y = 0; y < _result.Height; ++y)
+						{
+							var tile = _result.Tiles[x, y];
+							writer.Write((int)tile.HeightType);
+							writer.Write(tile.HeightValue);
+							writer.Write((int)tile.HeatType);
+							writer.Write(tile.HeatValue);
+							writer.Write((int)tile.MoistureType);
+							writer.Write(tile.MoistureValue);
+						}
+					}
+				}
+			};
+
+			dialog.ShowModal(Desktop);
+		}
+
+		private void LoadResult()
+		{
+			var dialog = new FileDialog(FileDialogMode.OpenFile)
+			{
+				Filter = "*.bin"
+			};
+
+			dialog.Closed += (s, a) =>
+			{
+				if (!dialog.Result)
+				{
+					return;
+				}
+
+				var result = new GenerationResult();
+
+				using (var stream = File.OpenRead(dialog.FilePath))
+				using (var reader = new BinaryReader(stream))
+				{
+					result.MapType = (MapType)reader.ReadInt32();
+
+					var width = reader.ReadInt32();
+					var height = reader.ReadInt32();
+
+					result.Tiles = new Tile[width, height];
+					for (var x = 0; x < result.Width; ++x)
+					{
+						for (var y = 0; y < result.Height; ++y)
+						{
+							var tile = new Tile
+							{
+								X = x,
+								Y = y,
+								HeightType = (HeightType)reader.ReadInt32(),
+								HeightValue = reader.ReadSingle(),
+								HeatType = (HeatType)reader.ReadInt32(),
+								HeatValue = reader.ReadSingle(),
+								MoistureType = (MoistureType)reader.ReadInt32(),
+								MoistureValue = reader.ReadSingle()
+							};
+
+							result.Tiles[x, y] = tile;
+						}
+					}
+				}
+
+				result.UpdateNeighbors();
+				result.UpdateBitmask();
+				result.UpdateBiomeMask();
+
+				_result = result;
+				UpdateSaveEnabled();
+				UpdateTextures();
+				UpdateView();
+			};
+
+			dialog.ShowModal(Desktop);
+		}
+
+		private void UpdateSaveEnabled()
+		{
+			_buttonSave.Enabled = _result != null;
 		}
 
 		public void LogMessage(string message)
@@ -100,6 +221,8 @@ namespace WorldGenerator.App.UI
 				ExecuteAtUIThread(() =>
 				{
 					_buttonGenerate.Enabled = false;
+					_buttonSave.Enabled = false;
+					_buttonLoad.Enabled = false;
 					_labelLog.Text = "Starting...";
 				});
 
@@ -118,16 +241,10 @@ namespace WorldGenerator.App.UI
 				generator.Go();
 
 				_result = generator.GenerationResult;
-				_viewType = generator is WrappingWorldGenerator ? ViewType.View2D : ViewType.View3D;
 
 				LogMessage("Building textures");
 
-				var tiles = _result.Tiles;
-
-				_textureHeight = TextureGenerator.GetHeightMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles);
-				_textureHeat = TextureGenerator.GetHeatMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles);
-				_textureMoisture = TextureGenerator.GetMoistureMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles);
-				_textureBiome = TextureGenerator.GetBiomeMapTexture(Game1.Instance.GraphicsDevice, tiles.GetLength(0), tiles.GetLength(1), tiles, _config.ColdestValue, _config.ColderValue, _config.ColdValue);
+				UpdateTextures();
 
 				ExecuteAtUIThread(() =>
 				{
@@ -139,9 +256,24 @@ namespace WorldGenerator.App.UI
 				ExecuteAtUIThread(() =>
 				{
 					_buttonGenerate.Enabled = true;
+					UpdateSaveEnabled();
+					_buttonLoad.Enabled = true;
+
 					_logMessage = string.Empty;
 				});
 			}
+		}
+
+		private void UpdateTextures()
+		{
+			var tiles = _result.Tiles;
+
+			var width = _result.Width;
+			var height = _result.Height;
+			_textureHeight = TextureGenerator.GetHeightMapTexture(Game1.Instance.GraphicsDevice, width, height, tiles);
+			_textureHeat = TextureGenerator.GetHeatMapTexture(Game1.Instance.GraphicsDevice, width, height, tiles);
+			_textureMoisture = TextureGenerator.GetMoistureMapTexture(Game1.Instance.GraphicsDevice, width, height, tiles);
+			_textureBiome = TextureGenerator.GetBiomeMapTexture(Game1.Instance.GraphicsDevice, width, height, tiles, _config.ColdestValue, _config.ColderValue, _config.ColdValue);
 		}
 
 		private void UpdateView()
@@ -169,7 +301,7 @@ namespace WorldGenerator.App.UI
 				texture = _textureBiome;
 			}
 
-			if (_viewType == ViewType.View2D)
+			if (_result.MapType == MapType.Wrapping)
 			{
 				// 2D
 				_image2DView.Renderable = new TextureRegion(texture);

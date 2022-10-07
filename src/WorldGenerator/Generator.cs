@@ -33,17 +33,8 @@ namespace WorldGenerator
 
 		public GenerationResult GenerationResult;
 
+		protected abstract MapType MapType { get; }
 
-		private BiomeType[,] BiomeTable = new BiomeType[6, 6]
-		{
-			//COLDEST        //COLDER          //COLD                  //HOT                          //HOTTER                       //HOTTEST
-			{ BiomeType.Ice, BiomeType.Tundra, BiomeType.Grassland,    BiomeType.Desert,              BiomeType.Desert,              BiomeType.Desert },              //DRYEST
-			{ BiomeType.Ice, BiomeType.Tundra, BiomeType.Grassland,    BiomeType.Desert,              BiomeType.Desert,              BiomeType.Desert },              //DRYER
-			{ BiomeType.Ice, BiomeType.Tundra, BiomeType.Woodland,     BiomeType.Woodland,            BiomeType.Savanna,             BiomeType.Savanna },             //DRY
-			{ BiomeType.Ice, BiomeType.Tundra, BiomeType.BorealForest, BiomeType.Woodland,            BiomeType.Savanna,             BiomeType.Savanna },             //WET
-			{ BiomeType.Ice, BiomeType.Tundra, BiomeType.BorealForest, BiomeType.SeasonalForest,      BiomeType.TropicalRainforest,  BiomeType.TropicalRainforest },  //WETTER
-			{ BiomeType.Ice, BiomeType.Tundra, BiomeType.BorealForest, BiomeType.TemperateRainforest, BiomeType.TropicalRainforest,  BiomeType.TropicalRainforest }   //WETTEST
-		};
 
 		public Generator(GeneratorSettings settings, ILog logHandler)
 		{
@@ -80,15 +71,13 @@ namespace WorldGenerator
 		protected abstract void Initialize();
 		protected abstract void GetData();
 
-		protected abstract Tile GetTop(Tile tile);
-		protected abstract Tile GetBottom(Tile tile);
-		protected abstract Tile GetLeft(Tile tile);
-		protected abstract Tile GetRight(Tile tile);
-
 		protected virtual void Instantiate()
 		{
 			Seed = MathHelper.RandomRange(0, int.MaxValue);
-			GenerationResult = new GenerationResult();
+			GenerationResult = new GenerationResult
+			{
+				MapType = MapType
+			};
 
 			Initialize();
 		}
@@ -122,42 +111,13 @@ namespace WorldGenerator
 			LogInfo("FloodFill");
 			FloodFill();
 
-			LogInfo("GenerateBiomeMap");
-			GenerateBiomeMap();
-
 			LogInfo("UpdateBiomeBitmask");
 			UpdateBiomeBitmask();
 		}
 
 		private void UpdateBiomeBitmask()
 		{
-			for (var x = 0; x < settings.Width; x++)
-			{
-				for (var y = 0; y < settings.Height; y++)
-				{
-					GenerationResult.Tiles[x, y].UpdateBiomeBitmask();
-				}
-			}
-		}
-
-		public BiomeType GetBiomeType(Tile tile)
-		{
-			return BiomeTable[(int)tile.MoistureType, (int)tile.HeatType];
-		}
-
-		private void GenerateBiomeMap()
-		{
-			for (var x = 0; x < settings.Width; x++)
-			{
-				for (var y = 0; y < settings.Height; y++)
-				{
-
-					if (!GenerationResult.Tiles[x, y].Collidable) continue;
-
-					Tile t = GenerationResult.Tiles[x, y];
-					t.BiomeType = GetBiomeType(t);
-				}
-			}
+			GenerationResult.UpdateBiomeMask();
 		}
 
 		private void AddMoisture(Tile t, int radius)
@@ -609,10 +569,10 @@ namespace WorldGenerator
 				river.AddTile(tile);
 
 				// get neighbors
-				Tile left = GetLeft(tile);
-				Tile right = GetRight(tile);
-				Tile top = GetTop(tile);
-				Tile bottom = GetBottom(tile);
+				Tile left = tile.Left;
+				Tile right = tile.Right;
+				Tile top = tile.Top;
+				Tile bottom = tile.Bottom;
 
 				float leftValue = int.MaxValue;
 				float rightValue = int.MaxValue;
@@ -735,39 +695,31 @@ namespace WorldGenerator
 					if (heightValue < settings.DeepWater)
 					{
 						t.HeightType = HeightType.DeepWater;
-						t.Collidable = false;
 					}
 					else if (heightValue < settings.ShallowWater)
 					{
 						t.HeightType = HeightType.ShallowWater;
-						t.Collidable = false;
 					}
 					else if (heightValue < settings.Sand)
 					{
 						t.HeightType = HeightType.Sand;
-						t.Collidable = true;
 					}
 					else if (heightValue < settings.Grass)
 					{
 						t.HeightType = HeightType.Grass;
-						t.Collidable = true;
 					}
 					else if (heightValue < settings.Forest)
 					{
 						t.HeightType = HeightType.Forest;
-						t.Collidable = true;
 					}
 					else if (heightValue < settings.Rock)
 					{
 						t.HeightType = HeightType.Rock;
-						t.Collidable = true;
 					}
 					else
 					{
 						t.HeightType = HeightType.Snow;
-						t.Collidable = true;
 					}
-
 
 					//adjust moisture based on height
 					if (t.HeightType == HeightType.DeepWater)
@@ -851,29 +803,12 @@ namespace WorldGenerator
 
 		private void UpdateNeighbors()
 		{
-			for (var x = 0; x < settings.Width; x++)
-			{
-				for (var y = 0; y < settings.Height; y++)
-				{
-					Tile t = GenerationResult.Tiles[x, y];
-
-					t.Top = GetTop(t);
-					t.Bottom = GetBottom(t);
-					t.Left = GetLeft(t);
-					t.Right = GetRight(t);
-				}
-			}
+			GenerationResult.UpdateNeighbors();
 		}
 
 		private void UpdateBitmasks()
 		{
-			for (var x = 0; x < settings.Width; x++)
-			{
-				for (var y = 0; y < settings.Height; y++)
-				{
-					GenerationResult.Tiles[x, y].UpdateBitmask();
-				}
-			}
+			GenerationResult.UpdateBitmask();
 		}
 
 		private void FloodFill()
@@ -942,16 +877,16 @@ namespace WorldGenerator
 			tile.FloodFilled = true;
 
 			// floodfill into neighbors
-			Tile t = GetTop(tile);
+			Tile t = tile.Top;
 			if (t != null && !t.FloodFilled && tile.Collidable == t.Collidable)
 				stack.Push(t);
-			t = GetBottom(tile);
+			t = tile.Bottom;
 			if (t != null && !t.FloodFilled && tile.Collidable == t.Collidable)
 				stack.Push(t);
-			t = GetLeft(tile);
+			t = tile.Left;
 			if (t != null && !t.FloodFilled && tile.Collidable == t.Collidable)
 				stack.Push(t);
-			t = GetRight(tile);
+			t = tile.Right;
 			if (t != null && !t.FloodFilled && tile.Collidable == t.Collidable)
 				stack.Push(t);
 		}

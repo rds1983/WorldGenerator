@@ -6,8 +6,10 @@
       <Proportion Type="Auto" />
       <Proportion Type="Fill" />
     </VerticalStackPanel.Proportions>
-    <HorizontalStackPanel>
+    <HorizontalStackPanel Spacing="8">
       <TextButton Text="Generate" Width="100" Id="_buttonGenerate" />
+      <TextButton Text="Save" Width="100" Id="_buttonSave" />
+      <TextButton Text="Load" Width="100" Id="_buttonLoad" />
     </HorizontalStackPanel>
     <HorizontalSeparator />
     <HorizontalSplitPane Id="_splitPane">

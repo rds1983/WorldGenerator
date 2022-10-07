@@ -13,6 +13,8 @@ namespace WorldGenerator
 		protected ImplicitFractal Cloud1Map;
 		protected ImplicitFractal Cloud2Map;
 
+		protected override MapType MapType => MapType.Spherical;
+
 		public SphericalWorldGenerator(GeneratorSettings settings, ILog logHandler = null) : base(settings, logHandler)
 		{
 		}
@@ -165,29 +167,5 @@ namespace WorldGenerator
 			y = MathF.Sin(MathHelper.Deg2Rad * lon);
 			z = r * MathF.Sin(MathHelper.Deg2Rad * lat);
 		}
-
-		protected override Tile GetTop(Tile t)
-		{
-			if (t.Y - 1 > 0)
-				return GenerationResult.Tiles[t.X, t.Y - 1];
-			else
-				return null;
-		}
-		protected override Tile GetBottom(Tile t)
-		{
-			if (t.Y + 1 < settings.Height)
-				return GenerationResult.Tiles[t.X, t.Y + 1];
-			else
-				return null;
-		}
-		protected override Tile GetLeft(Tile t)
-		{
-			return GenerationResult.Tiles[MathHelper.Mod(t.X - 1, settings.Width), t.Y];
-		}
-		protected override Tile GetRight(Tile t)
-		{
-			return GenerationResult.Tiles[MathHelper.Mod(t.X + 1, settings.Width), t.Y];
-		}
-
 	}
 }
